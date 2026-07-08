@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "exportDate": "2026-07-08T15:30:00.000Z",
+  "exportedBy": "ChatGPT (example)",
+  "applicationVersion": "1.0.0",
+  "operations": [
+    {
+      "op": "CREATE_RECIPE",
+      "title": "Quick Tomato Bruschetta",
+      "category": "Snacks",
+      "cuisine": "Italian",
+      "mealType": "Snack",
+      "difficulty": "Easy",
+      "prepMinutes": 10,
+      "cookMinutes": 5,
+      "servings": 4,
+      "ingredients": [
+        { "name": "baguette", "amount": 1, "unit": "", "shoppingCategory": "Bakery" },
+        { "name": "tomatoes", "amount": 3, "unit": "", "notes": "ripe, diced", "shoppingCategory": "Produce" },
+        { "name": "basil", "amount": 8, "unit": "", "notes": "leaves, torn", "shoppingCategory": "Produce" },
+        { "name": "olive oil", "amount": 30, "unit": "ml", "shoppingCategory": "Pantry" },
+        { "name": "garlic", "amount": 1, "unit": "clove", "shoppingCategory": "Produce" }
+      ],
+      "instructions": [
+        "Toast baguette slices until golden.",
+        "Rub each slice with the cut garlic clove.",
+        "Top with tomatoes and basil, drizzle with oil, season with flaky salt."
+      ],
+      "tags": ["vegan", "garden"]
+    },
+    {
+      "op": "CREATE_MEAL_PLAN",
+      "date": "2026-07-10",
+      "mealType": "Dinner",
+      "recipeTitle": "Three-Bean Garden Chili",
+      "servings": 4,
+      "notes": "Double it — freeze half"
+    },
+    {
+      "op": "ADD_SHOPPING_ITEM",
+      "type": "HOUSEHOLD",
+      "name": "Olive oil",
+      "category": "Pantry",
+      "quantity": 1,
+      "unit": "bottle"
+    },
+    {
+      "op": "ADD_SHOPPING_ITEM",
+      "type": "BOTANICALS",
+      "name": "Lavender essential oil",
+      "category": "Essential oils",
+      "quantity": 2,
+      "unit": "bottles",
+      "priority": "high"
+    },
+    {
+      "op": "REMOVE_PANTRY_ITEM",
+      "name": "Garlic"
+    },
+    {
+      "op": "UPDATE_GARDEN_ENTRY",
+      "plantName": "Tomato",
+      "harvest": { "date": "2026-07-08", "quantity": 6, "unit": "", "notes": "First six of the season" }
+    },
+    {
+      "op": "UPDATE_SETTINGS",
+      "settings": { "units": "metric" }
+    }
+  ]
+}

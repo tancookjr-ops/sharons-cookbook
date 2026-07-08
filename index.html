@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sharon's Cookbook</title>
+  <meta name="description" content="An offline-first personal cookbook, meal planner, pantry, shopping and garden companion.">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#faf6ef" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1d2521" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Cookbook">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+  <!-- Stylesheets (order matters: tokens/base first, then layout, then features) -->
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/forms.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/recipes.css">
+  <link rel="stylesheet" href="css/planner.css">
+  <link rel="stylesheet" href="css/pantry.css">
+  <link rel="stylesheet" href="css/shopping.css">
+  <link rel="stylesheet" href="css/garden.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- Application shell: sidebar navigation + top bar + main outlet.
+       All view content is rendered into #main by the router (js/app.js). -->
+  <div class="app-shell" id="app-shell">
+
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <a class="brand" href="#/dashboard">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 21c-4.5 0-8-3-8-8 0-6 5-10 8-11 3 1 8 5 8 11 0 5-3.5 8-8 8Z" fill="var(--sage)"/>
+          <path d="M12 4v15" stroke="var(--cream)" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M12 9c1.6-.4 3-1.6 3.6-3.2M12 13c-1.8-.4-3.4-1.8-4-3.6" stroke="var(--cream)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span class="brand-name">Sharon's Cookbook</span>
+      </a>
+      <div class="topbar-spacer"></div>
+      <span class="net-status" id="net-status" role="status" aria-live="polite"></span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle colour theme" title="Toggle theme (light / dark)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="sun" d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-15v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+      </button>
+    </header>
+
+    <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+      <ul class="nav-list" id="nav-list">
+        <li><a href="#/dashboard" data-nav="dashboard"><span class="nav-ico">◐</span> Dashboard</a></li>
+        <li><a href="#/recipes" data-nav="recipes"><span class="nav-ico">✎</span> Recipes</a></li>
+        <li><a href="#/planner" data-nav="planner"><span class="nav-ico">▦</span> Meal planner</a></li>
+        <li><a href="#/pantry" data-nav="pantry"><span class="nav-ico">▤</span> Pantry</a></li>
+        <li><a href="#/shopping" data-nav="shopping"><span class="nav-ico">☰</span> Household shopping</a></li>
+        <li><a href="#/botanicals" data-nav="botanicals"><span class="nav-ico">✦</span> Tancook Botanicals</a></li>
+        <li><a href="#/garden" data-nav="garden"><span class="nav-ico">❀</span> Garden</a></li>
+        <li class="nav-sep" role="separator"></li>
+        <li><a href="#/import" data-nav="import"><span class="nav-ico">⇪</span> AI import</a></li>
+        <li><a href="#/settings" data-nav="settings"><span class="nav-ico">⚙</span> Settings</a></li>
+      </ul>
+      <p class="sidebar-foot" id="app-version"></p>
+    </nav>
+    <div class="sidebar-scrim" id="sidebar-scrim" hidden></div>
+
+    <main class="main" id="main" tabindex="-1">
+      <!-- Router outlet -->
+    </main>
+  </div>
+
+  <!-- Update banner: shown by app.js when a new service worker is waiting -->
+  <div class="update-banner" id="update-banner" hidden>
+    <span>A new version of Sharon's Cookbook is ready.</span>
+    <button class="btn btn-primary btn-sm" id="update-reload">Update now</button>
+    <button class="btn btn-ghost btn-sm" id="update-dismiss">Later</button>
+  </div>
+
+  <!-- Toast notifications (polite live region) -->
+  <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
+
+  <!-- Shared modal dialog, driven by utilities.js openDialog() -->
+  <dialog class="app-dialog" id="app-dialog"></dialog>
+
+  <noscript>
+    <div class="noscript-msg">
+      Sharon's Cookbook needs JavaScript to store and display your recipes.
+      Please enable JavaScript in your browser.
+    </div>
+  </noscript>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

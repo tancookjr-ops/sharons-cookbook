@@ -1,0 +1,10 @@
+# Test artifacts (Playwright lives OUTSIDE this repo — see tests/README.md)
+tests/shots/
+node_modules/
+package.json
+package-lock.json
+
+# OS noise
+.DS_Store
+Thumbs.db
+*.log

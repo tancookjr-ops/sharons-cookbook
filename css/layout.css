@@ -1,0 +1,151 @@
+/* ==================================================================
+   layout.css — application shell, navigation, page scaffolding.
+   Mobile-first: single column with an off-canvas sidebar; from 900px
+   the sidebar docks permanently on the left.
+   ================================================================== */
+
+/* ------------------------------ shell ----------------------------- */
+.app-shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-areas: "topbar" "main";
+}
+
+/* ------------------------------ topbar ---------------------------- */
+.topbar {
+  grid-area: topbar;
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: .4rem;
+  padding: .45rem max(.8rem, env(safe-area-inset-right)) .45rem max(.8rem, env(safe-area-inset-left));
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-spacer { flex: 1; }
+
+.brand {
+  display: inline-flex; align-items: center; gap: .55rem;
+  text-decoration: none; color: var(--text);
+}
+.brand-mark { width: 1.8rem; height: 1.8rem; }
+.brand-name {
+  font-family: var(--font-display); font-size: 1.25em; font-weight: 600;
+  letter-spacing: .01em;
+}
+
+.net-status { font-size: .8em; color: var(--text-soft); }
+.net-status.offline {
+  background: var(--warn-soft); color: var(--warn);
+  padding: .15em .7em; border-radius: 999px; font-weight: 600;
+}
+
+/* ------------------------------ sidebar --------------------------- */
+.sidebar {
+  position: fixed; z-index: 60; top: 0; bottom: 0; left: 0;
+  width: min(78vw, 17rem);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1rem .8rem calc(1rem + env(safe-area-inset-bottom));
+  transform: translateX(-102%);
+  transition: transform .22s ease;
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.nav-open .sidebar { transform: none; box-shadow: var(--shadow-pop); }
+
+.sidebar-scrim {
+  position: fixed; inset: 0; z-index: 55;
+  background: rgb(20 26 22 / .4);
+}
+
+.nav-list { list-style: none; margin: 0; padding: 0; flex: 1; }
+.nav-list a {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .6rem .9rem; margin: .1rem 0;
+  border-radius: var(--radius-sm);
+  color: var(--text); text-decoration: none; font-weight: 500;
+}
+.nav-list a:hover { background: var(--surface-2); }
+.nav-list a.active {
+  background: var(--primary-soft); color: var(--primary-deep); font-weight: 700;
+}
+.nav-ico { width: 1.4em; text-align: center; opacity: .75; font-style: normal; }
+.nav-sep { border-top: 1px solid var(--border); margin: .6rem .4rem; }
+.sidebar-foot { color: var(--text-soft); font-size: .78em; margin: .8rem .9rem 0; }
+
+/* ------------------------------ main ------------------------------ */
+.main {
+  grid-area: main;
+  padding: 1rem max(1rem, env(safe-area-inset-right)) 4rem max(1rem, env(safe-area-inset-left));
+  width: 100%;
+  max-width: 74rem;
+  margin: 0 auto;
+  outline: none;
+}
+
+/* Desktop: docked sidebar */
+@media (min-width: 900px) {
+  .app-shell {
+    grid-template-columns: 15.5rem 1fr;
+    grid-template-areas: "topbar topbar" "sidebar main";
+  }
+  .sidebar {
+    grid-area: sidebar;
+    position: sticky; top: 3.4rem;
+    height: calc(100dvh - 3.4rem);
+    transform: none; z-index: 10;
+    border-right: 1px solid var(--border);
+    box-shadow: none;
+  }
+  .menu-btn, .sidebar-scrim { display: none; }
+  .main { padding: 1.6rem 2rem 4rem; }
+}
+
+/* --------------------------- page scaffold ------------------------- */
+.page-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap; margin: .4rem 0 1.2rem;
+}
+.page-head h1 { margin: 0; }
+.page-sub { color: var(--text-soft); margin: .2em 0 0; }
+.page-actions { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+
+.crumbs { margin-bottom: .8rem; font-size: .9em; }
+.result-count { color: var(--text-soft); font-size: .88em; margin: .4rem 0 .8rem; }
+
+/* segmented control (planner modes, pantry locations, garden tabs) */
+.seg {
+  display: inline-flex; flex-wrap: wrap; gap: .25rem;
+  background: var(--surface-2); border-radius: 999px; padding: .25rem;
+}
+.seg-btn {
+  border: none; background: transparent; color: var(--text-soft);
+  font: inherit; font-weight: 600; font-size: .9em;
+  padding: .4em 1em; border-radius: 999px; cursor: pointer;
+}
+.seg-btn:hover { color: var(--text); }
+.seg-btn.active { background: var(--surface); color: var(--primary-deep); box-shadow: var(--shadow-card); }
+.seg-btn small { font-weight: 400; opacity: .7; }
+
+/* alert strip (pantry + dashboard) */
+.alert-strip { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.alert-pill {
+  padding: .3em 1em; border-radius: 999px; font-size: .85em; font-weight: 600;
+}
+.alert-danger { background: var(--danger-soft); color: var(--danger); }
+.alert-warn   { background: var(--warn-soft); color: var(--warn); }
+.alert-info   { background: var(--accent-soft); color: var(--accent); }
+
+/* generic tables */
+.stats-table { border-collapse: collapse; width: 100%; }
+.stats-table th, .stats-table td {
+  text-align: left; padding: .35em .5em; border-bottom: 1px solid var(--border);
+  font-size: .92em;
+}
+.stats-table th { color: var(--text-soft); font-weight: 500; }
+.stats-table td { text-align: right; font-variant-numeric: tabular-nums; }
+
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.row-btns { display: inline-flex; gap: .1rem; align-items: center; white-space: nowrap; }

@@ -1,0 +1,289 @@
+/* ==================================================================
+   app.css — design tokens, base styles, primitives, print rules.
+
+   Palette: coastal Nova Scotia meets a Mediterranean kitchen —
+   herbs (sage), sea glass (soft teal), driftwood (warm grey-brown),
+   cream linen backgrounds, a restrained terracotta accent.
+
+   Theming: light tokens live on :root. [data-theme="dark"] overrides
+   them; [data-theme="auto"] follows the device preference.
+   ================================================================== */
+
+/* ------------------------------ tokens --------------------------- */
+:root {
+  /* brand hues */
+  --cream:      #faf6ef;
+  --paper:      #ffffff;
+  --sand:       #ede5d8;
+  --driftwood:  #8a7a66;
+  --sage:       #6e8b63;
+  --sage-deep:  #4c6644;
+  --sage-soft:  #e4ebdf;
+  --seaglass:   #63a294;
+  --seaglass-soft: #ddeeea;
+  --terracotta: #c05f36;
+  --terracotta-soft: #f6e3d9;
+  --ink:        #2c332d;
+  --ink-soft:   #5d675e;
+
+  /* semantic */
+  --bg:            var(--cream);
+  --surface:       var(--paper);
+  --surface-2:     var(--sand);
+  --text:          var(--ink);
+  --text-soft:     var(--ink-soft);
+  --border:        #ddd4c4;
+  --primary:       var(--sage);
+  --primary-deep:  var(--sage-deep);
+  --primary-soft:  var(--sage-soft);
+  --accent:        var(--seaglass);
+  --accent-soft:   var(--seaglass-soft);
+  --danger:        var(--terracotta);
+  --danger-soft:   var(--terracotta-soft);
+  --warn:          #b98a2e;
+  --warn-soft:     #f5ecd6;
+
+  /* shape + depth */
+  --radius:     12px;
+  --radius-sm:  8px;
+  --shadow-card: 0 1px 2px rgb(44 51 45 / .06), 0 4px 16px rgb(44 51 45 / .07);
+  --shadow-pop:  0 4px 12px rgb(44 51 45 / .14), 0 12px 40px rgb(44 51 45 / .18);
+
+  /* type */
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --font-scale: 1;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg:            #1d2521;
+  --surface:       #273129;
+  --surface-2:     #303b32;
+  --text:          #e9e5d9;
+  --text-soft:     #a8b0a3;
+  --border:        #3c463d;
+  --primary:       #8fae84;
+  --primary-deep:  #a9c69e;
+  --primary-soft:  #35422f;
+  --accent:        #7fb8ab;
+  --accent-soft:   #2c423d;
+  --danger:        #d98a63;
+  --danger-soft:   #46302a;
+  --warn:          #d3ad58;
+  --warn-soft:     #423a26;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 4px 16px rgb(0 0 0 / .25);
+  --shadow-pop:  0 4px 12px rgb(0 0 0 / .4), 0 12px 40px rgb(0 0 0 / .5);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    --bg:            #1d2521;
+    --surface:       #273129;
+    --surface-2:     #303b32;
+    --text:          #e9e5d9;
+    --text-soft:     #a8b0a3;
+    --border:        #3c463d;
+    --primary:       #8fae84;
+    --primary-deep:  #a9c69e;
+    --primary-soft:  #35422f;
+    --accent:        #7fb8ab;
+    --accent-soft:   #2c423d;
+    --danger:        #d98a63;
+    --danger-soft:   #46302a;
+    --warn:          #d3ad58;
+    --warn-soft:     #423a26;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 4px 16px rgb(0 0 0 / .25);
+    --shadow-pop:  0 4px 12px rgb(0 0 0 / .4), 0 12px 40px rgb(0 0 0 / .5);
+    color-scheme: dark;
+  }
+}
+
+/* ------------------------------ reset ----------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* The hidden attribute must always win, even over display:flex rules. */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: calc(1rem * var(--font-scale));
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+img, svg { max-width: 100%; display: block; }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 .5em;
+  color: var(--text);
+  letter-spacing: .01em;
+}
+h1 { font-size: 1.9em; }
+h2 { font-size: 1.35em; }
+h3 { font-size: 1.1em; }
+h2 small, h1 small { font-family: var(--font-body); font-size: .55em; color: var(--text-soft); font-weight: 400; }
+
+p { margin: 0 0 .8em; }
+a { color: var(--primary-deep); text-underline-offset: 2px; }
+a:hover { color: var(--primary); }
+
+::selection { background: var(--primary-soft); }
+
+/* Focus visibility — keyboard navigation is a first-class feature. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ---------------------------- utilities --------------------------- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.hint { color: var(--text-soft); font-size: .85em; }
+.spacer { flex: 1; }
+
+.skip-link {
+  position: absolute; left: -999px; top: 0; z-index: 100;
+  background: var(--primary); color: #fff; padding: .6em 1em;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+.skip-link:focus { left: 0; }
+
+.empty-state {
+  text-align: center; padding: 3rem 1rem; color: var(--text-soft);
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: var(--radius); margin: 1rem 0;
+}
+.empty-state .btn { margin-top: .5rem; }
+
+.noscript-msg { padding: 2rem; text-align: center; font-size: 1.1em; }
+
+/* ---------------------------- buttons ------------------------------ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .4em;
+  font: inherit; font-weight: 600; font-size: .95em;
+  padding: .55em 1.1em; border-radius: 999px;
+  border: 1px solid transparent; cursor: pointer;
+  text-decoration: none; white-space: nowrap;
+  transition: background .15s, color .15s, border-color .15s, transform .05s;
+  touch-action: manipulation;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-primary { background: var(--primary); color: #fff; }
+[data-theme="dark"] .btn-primary { color: #1d2521; }
+@media (prefers-color-scheme: dark) { [data-theme="auto"] .btn-primary { color: #1d2521; } }
+.btn-primary:hover { background: var(--primary-deep); color: #fff; }
+[data-theme="dark"] .btn-primary:hover { color: #1d2521; }
+@media (prefers-color-scheme: dark) { [data-theme="auto"] .btn-primary:hover { color: #1d2521; } }
+
+.btn-ghost {
+  background: var(--surface); color: var(--text);
+  border-color: var(--border);
+}
+.btn-ghost:hover { border-color: var(--primary); color: var(--primary-deep); }
+
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { filter: brightness(.92); }
+.btn-danger-ghost { background: transparent; color: var(--danger); border-color: var(--danger); }
+.btn-danger-ghost:hover { background: var(--danger-soft); }
+
+.btn-sm { font-size: .82em; padding: .35em .8em; }
+.btn-lg { font-size: 1.05em; padding: .7em 1.6em; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.2em; height: 2.2em; border-radius: 50%;
+  border: none; background: transparent; color: var(--text-soft);
+  font: inherit; cursor: pointer; flex: none;
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+.icon-btn svg { width: 1.3em; height: 1.3em; }
+
+/* ------------------------------ chips ------------------------------ */
+.chip {
+  display: inline-block; padding: .1em .7em; border-radius: 999px;
+  font-size: .78em; font-weight: 600; background: var(--surface-2);
+  color: var(--text-soft); white-space: nowrap;
+}
+.chip-tag    { background: var(--primary-soft); color: var(--primary-deep); }
+.chip-danger { background: var(--danger-soft); color: var(--danger); }
+.chip-warn   { background: var(--warn-soft); color: var(--warn); }
+.chip-info   { background: var(--accent-soft); color: var(--accent); }
+.chip-sm     { font-size: .7em; }
+
+/* ------------------------------ toasts ----------------------------- */
+.toast-region {
+  position: fixed; bottom: max(1rem, env(safe-area-inset-bottom)); left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: .5rem; z-index: 90;
+  width: min(92vw, 26rem); pointer-events: none;
+}
+.toast {
+  background: var(--ink); color: var(--cream);
+  padding: .7em 1.2em; border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
+  opacity: 0; translate: 0 8px; transition: opacity .25s, translate .25s;
+  text-align: center; font-size: .95em;
+}
+[data-theme="dark"] .toast { background: var(--sand); color: var(--ink); }
+@media (prefers-color-scheme: dark) { [data-theme="auto"] .toast { background: var(--sand); color: var(--ink); } }
+.toast.show { opacity: 1; translate: 0 0; }
+.toast-success { border-left: 4px solid var(--primary); }
+.toast-warn    { border-left: 4px solid var(--warn); }
+.toast-error   { border-left: 4px solid var(--danger); }
+
+/* ------------------------------ dialog ----------------------------- */
+.app-dialog {
+  border: none; border-radius: var(--radius);
+  background: var(--surface); color: var(--text);
+  box-shadow: var(--shadow-pop);
+  width: min(92vw, 30rem); padding: 0;
+}
+.app-dialog.dialog-wide { width: min(94vw, 42rem); }
+.app-dialog::backdrop { background: rgb(20 26 22 / .45); backdrop-filter: blur(2px); }
+
+.dialog-body { padding: 1.4rem; display: flex; flex-direction: column; gap: .8rem; }
+.dialog-title { margin: 0; }
+.dialog-message { font-size: 1.05em; }
+.dialog-actions { display: flex; gap: .6rem; justify-content: flex-end; align-items: center; margin-top: .4rem; }
+.dialog-row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+
+/* -------------------------- update banner -------------------------- */
+.update-banner {
+  position: fixed; bottom: max(1rem, env(safe-area-inset-bottom)); right: 1rem; z-index: 95;
+  display: flex; align-items: center; gap: .8rem; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-pop);
+  padding: .8rem 1.1rem; max-width: min(92vw, 24rem);
+}
+
+/* ------------------------------ print ------------------------------ */
+@media print {
+  .topbar, .sidebar, .sidebar-scrim, .toast-region, .update-banner,
+  .no-print, .skip-link { display: none !important; }
+  body { background: #fff; color: #000; }
+  .app-shell { display: block; }
+  .main { padding: 0; }
+  a { color: inherit; text-decoration: none; }
+  .recipe-card, .form-card, .dash-card { box-shadow: none; border: 1px solid #ccc; }
+}
