@@ -1,92 +1,108 @@
-# Sharon's Cookbook
+# Sharon's Cookbook — hosted app (GitHub Pages)
 
-An **offline-first Progressive Web App**: personal cookbook, meal planner,
-pantry inventory, dual shopping lists, and garden companion — with a focus on
-raw-vegan-friendly meal planning, ingredient shopping, pantry stocktaking and
-bulk cooking, updatable and maintainable through a ChatGPT voice assistant.
-Built with plain HTML, CSS and vanilla JavaScript (ES2023) — no frameworks,
-no build step, no server, no internet required.
+Offline-first recipe book, meal planner, pantry and shopping lists.
+This folder is the complete, deploy-ready web app. Push it to GitHub,
+turn on Pages, install once on the phone — every future `git push`
+updates all installed copies automatically.
 
-## Highlights
+---
 
-- **Works completely offline.** All data lives on-device in IndexedDB; the app
-  shell is cached by a service worker. Installable on Windows, macOS, Linux,
-  Android and iPhone/iPad.
-- **Recipe database** with rich metadata (nutrition, EoE / blood-sugar /
-  anti-inflammatory notes, storage & freezer instructions, photos, tags,
-  ratings, version history), instant search, deep filtering, scaling,
-  duplication, print/PDF and Markdown export.
-- **Meal planner** — day / week / month views, drag-and-drop recipes, batch
-  cooking and leftover flags, and one-click grocery generation that subtracts
-  what the pantry already holds.
-- **Pantry** across five locations (pantry, fridge, freezer, garden harvest,
-  bulk storage) with expiry and low-stock alerts; recipes show live "in your
-  pantry" checkmarks per ingredient.
-- **Two fully separate shopping systems**: Household groceries and **Tancook
-  Island Botanicals** business supplies. Separate object stores, separate
-  lists — they can never mix.
-- **Garden** — plant database, planting/harvest dates, harvest log,
-  preservation plans, a seasonal calendar, and "cook with it" recipe links.
-- **AI Import Engine** — the app grows through structured JSON imports
-  generated from natural conversation with an AI assistant, with validation,
-  preview, conflict resolution, rollback and undo. See
-  [`docs/IMPORT_SPEC.md`](docs/IMPORT_SPEC.md).
-- **Backups** — one-file JSON export/import of everything, plus automatic
-  daily on-device snapshots with restore.
-- Light & dark themes, mobile-first responsive layout, keyboard navigation,
-  screen-reader-friendly markup, metric/imperial display conversion.
+## 1 · One-time setup (you, ~10 minutes)
 
-## Running it
+### Create the repo
+1. Sign in at github.com → **New repository**.
+2. Name it (e.g. `sharons-cookbook`), set **Public**
+   (private works too but Pages on private repos needs a paid plan).
+3. Don't add any starter files. Create the repository.
 
-It's a static site — serve the folder over HTTP(S) and open it:
+### Push this folder
+With git installed, from inside this `deploy/` folder:
 
 ```bash
-cd sharons-cookbook
-python3 -m http.server 8080
-# → http://localhost:8080
+git init
+git add .
+git commit -m "Sharon's Cookbook v1.0.0"
+git branch -M main
+git remote add origin https://github.com/YOUR-USERNAME/sharons-cookbook.git
+git push -u origin main
 ```
 
-(Service workers require `localhost` or HTTPS; opening `index.html` from
-`file://` runs the app but without offline caching.)
+(No git? On the repo page choose **uploading an existing file** and drag
+this folder's entire contents in, keeping the folder structure.)
 
-Install it from the browser's "Install app" / "Add to Home Screen" action.
-On first run a small set of starter recipes, pantry items and garden entries
-is loaded through the import engine (`data/starter-import.json`).
+### Turn on GitHub Pages
+1. Repo → **Settings → Pages**.
+2. Under *Build and deployment*: Source = **Deploy from a branch**,
+   Branch = **main**, folder = **/ (root)** → Save.
+3. Wait ~1 minute. Your app is live at:
+   `https://YOUR-USERNAME.github.io/sharons-cookbook/`
 
-## Project layout
+Open that URL in a browser and confirm it loads.
 
-```
-index.html            app shell (nav, outlet, dialog, toasts)
-manifest.webmanifest  PWA manifest
-sw.js                 service worker (precache, update flow)
-css/                  design system + per-feature styles
-js/                   ES modules — see docs/ARCHITECTURE.md
-icons/                generated PNG app icons
-images/               (reserved for future bundled imagery)
-data/                 starter content + sample AI import file
-docs/                 SPEC, ARCHITECTURE, SCHEMA, IMPORT_SPEC
-tests/                Playwright end-to-end smoke suite (test-only tooling)
-tools/                icon generator (pure-stdlib Python)
-```
+---
 
-## Documentation
+## 2 · Install on the phone (Sharon, ~1 minute)
 
-| File | What it covers |
+### iPhone / iPad (Safari)
+1. Open the URL in **Safari**.
+2. Tap **Share** (square with arrow) → **Add to Home Screen** → **Add**.
+3. Launch from the new home-screen icon. It opens full-screen,
+   works offline, and keeps her data on the device.
+
+### Android (Chrome)
+1. Open the URL in **Chrome**.
+2. Tap **⋮ → Add to Home screen** (or the "Install app" prompt) → **Install**.
+
+Install once. Never reinstall for updates.
+
+---
+
+## 3 · Shipping an update (you, ~1 minute)
+
+1. Edit the app files in this folder.
+2. **Bump the version** — open `sw.js` and change the first line:
+   `const VERSION = 'v1.0.0';` → `'v1.0.1'` (any new string works).
+   *No bump = phones keep the old cached version.*
+3. Commit and push:
+   ```bash
+   git add . && git commit -m "v1.0.1 — what changed" && git push
+   ```
+4. Next time the app is opened (online), it downloads the new version in
+   the background and shows **"Update ready — tap to reload"**. One tap
+   and she's current. Her recipes, pantry, plans and settings are
+   untouched — they live in the phone's local storage, not in the app.
+
+---
+
+## 4 · Data & troubleshooting
+
+- **Where's the data?** On the device (browser localStorage), saved
+  automatically a moment after every change. Updates never touch it.
+- **Backup:** Settings → Backup (export/import flows are stubs for now —
+  a good next milestone).
+- **Factory reset:** Settings → Danger zone → *Erase all data* (asks to
+  confirm, then reloads with the starter content).
+- **Update banner never appears:** confirm you bumped `VERSION` in
+  `sw.js`; the check runs when the app launches with a connection.
+- **Page is blank after a bad deploy:** fix the file, bump `VERSION`,
+  push again; if a phone is stuck, remove the icon, clear the site from
+  browser settings, and re-add — data survives unless the site data is
+  cleared explicitly.
+- **Custom domain later:** Settings → Pages → Custom domain; nothing in
+  the app needs to change.
+
+## Files
+
+| file | role |
 |---|---|
-| [`HANDOVER.md`](HANDOVER.md) | session record, binding decisions, repo-extraction guide |
-| [`docs/SPEC.md`](docs/SPEC.md) | the founding project specification (the contract) |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | two-layer design, modules, data flow |
-| [`docs/SCHEMA.md`](docs/SCHEMA.md) | every stable record shape + field rules |
-| [`docs/IMPORT_SPEC.md`](docs/IMPORT_SPEC.md) | the AI import format, operations, examples |
-| [`PROJECT_STATUS.md`](PROJECT_STATUS.md) | where the project stands |
-| [`TODO.md`](TODO.md) | planned work |
-| [`CHANGELOG.md`](CHANGELOG.md) | release history |
+| `index.html` | app shell, PWA meta, service-worker registration |
+| `manifest.webmanifest` | name, icons, standalone display |
+| `sw.js` | offline cache + update delivery — **bump `VERSION` here per release** |
+| `app.jsx`, `screens-*.jsx` | application code (React) |
+| `units.js` | measurement engine (metric/imperial, volume/weight, specific gravity) |
+| `data.js`, `recipes/` | starter content |
+| `styles.css` + `tokens/`, `base/components/patterns.css` | design system |
+| `icons/` | home-screen icons |
 
-## Principles
-
-1. **Application ≠ content.** The software (Layer 1) changes rarely; the
-   cookbook's content (Layer 2) grows continuously through imports.
-2. **Stable schema.** Field names and IDs are permanent. New fields may be
-   added; nothing is renamed or removed without a schema version bump.
-3. **Local-only.** No accounts, no network calls, no telemetry. The only way
-   data leaves the device is the user exporting it.
+Dev track (other update strategies considered): see `DEV-TRACK.md` in the
+design-system project.

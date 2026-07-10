@@ -1,0 +1,95 @@
+/* ==================================================================
+   colors.css — the Sharon's Cookbook palette.
+
+   "Coastal Nova Scotia meets a Mediterranean kitchen": herbs (sage),
+   sea glass (soft teal), driftwood (warm grey-brown), cream linen
+   backgrounds, a restrained terracotta accent.
+
+   Light tokens live on :root. [data-theme="dark"] overrides them;
+   [data-theme="auto"] follows the device preference. Values are copied
+   verbatim from the product's css/app.css — do not round or "tidy".
+   ================================================================== */
+
+:root {
+  /* --- brand hues (raw palette) --- */
+  --cream:           #faf6ef;
+  --paper:           #ffffff;
+  --sand:            #ede5d8;
+  --driftwood:       #8a7a66;
+  --sage:            #6e8b63;
+  --sage-deep:       #4c6644;
+  --sage-soft:       #e4ebdf;
+  --seaglass:        #63a294;
+  --seaglass-soft:   #ddeeea;
+  --terracotta:      #c05f36;
+  --terracotta-soft: #f6e3d9;
+  --ink:             #2c332d;
+  --ink-soft:        #5d675e;
+
+  /* --- semantic aliases (use these in product code) --- */
+  --bg:            var(--cream);
+  --surface:       var(--paper);
+  --surface-2:     var(--sand);
+  --text:          var(--ink);
+  --text-soft:     var(--ink-soft);
+  --border:        #ddd4c4;
+
+  --primary:       var(--sage);
+  --primary-deep:  var(--sage-deep);
+  --primary-soft:  var(--sage-soft);
+  --accent:        var(--seaglass);
+  --accent-soft:   var(--seaglass-soft);
+  --danger:        var(--terracotta);
+  --danger-soft:   var(--terracotta-soft);
+  --warn:          #b98a2e;
+  --warn-soft:     #f5ecd6;
+
+  /* Text colour that sits on a --primary fill (sage). White in light mode;
+     dark ink in dark mode, where the sage lightens. */
+  --on-primary:    #ffffff;
+
+  color-scheme: light;
+}
+
+/* ------------------------------ dark ------------------------------ */
+[data-theme="dark"] {
+  --bg:            #1d2521;
+  --surface:       #273129;
+  --surface-2:     #303b32;
+  --text:          #e9e5d9;
+  --text-soft:     #a8b0a3;
+  --border:        #3c463d;
+  --primary:       #8fae84;
+  --primary-deep:  #a9c69e;
+  --primary-soft:  #35422f;
+  --accent:        #7fb8ab;
+  --accent-soft:   #2c423d;
+  --danger:        #d98a63;
+  --danger-soft:   #46302a;
+  --warn:          #d3ad58;
+  --warn-soft:     #423a26;
+  --on-primary:    #1d2521;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    --bg:            #1d2521;
+    --surface:       #273129;
+    --surface-2:     #303b32;
+    --text:          #e9e5d9;
+    --text-soft:     #a8b0a3;
+    --border:        #3c463d;
+    --primary:       #8fae84;
+    --primary-deep:  #a9c69e;
+    --primary-soft:  #35422f;
+    --accent:        #7fb8ab;
+    --accent-soft:   #2c423d;
+    --danger:        #d98a63;
+    --danger-soft:   #46302a;
+    --warn:          #d3ad58;
+    --warn-soft:     #423a26;
+    --on-primary:    #1d2521;
+    color-scheme: dark;
+  }
+}

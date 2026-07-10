@@ -1,0 +1,200 @@
+/* ==================================================================
+   components.css — shared UI primitives (buttons, chips, inputs, form
+   cards, segmented controls, alerts, toasts, dialog, tables, empty
+   states). These are the design-system layer shared across every
+   feature of the app — verbatim from css/app.css, css/forms.css and the
+   shared parts of css/layout.css. Feature compositions (recipe cards,
+   planner grid, pantry tables, …) live in patterns.css.
+
+   The React components under components/ are thin wrappers over exactly
+   these classes, so the API and the markup stay in lock-step.
+   ================================================================== */
+
+/* ---------------------------- buttons ------------------------------ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .4em;
+  font: inherit; font-weight: 600; font-size: .95em;
+  padding: .55em 1.1em; border-radius: 999px;
+  border: 1px solid transparent; cursor: pointer;
+  text-decoration: none; white-space: nowrap;
+  transition: background .15s, color .15s, border-color .15s, transform .05s;
+  touch-action: manipulation;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-primary { background: var(--primary); color: var(--on-primary); }
+.btn-primary:hover { background: var(--primary-deep); color: var(--on-primary); }
+
+.btn-ghost {
+  background: var(--surface); color: var(--text);
+  border-color: var(--border);
+}
+.btn-ghost:hover { border-color: var(--primary); color: var(--primary-deep); }
+
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { filter: brightness(.92); }
+.btn-danger-ghost { background: transparent; color: var(--danger); border-color: var(--danger); }
+.btn-danger-ghost:hover { background: var(--danger-soft); }
+
+.btn-sm { font-size: .82em; padding: .35em .8em; }
+.btn-lg { font-size: 1.05em; padding: .7em 1.6em; }
+.btn[disabled], .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.2em; height: 2.2em; border-radius: 50%;
+  border: none; background: transparent; color: var(--text-soft);
+  font: inherit; cursor: pointer; flex: none;
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+.icon-btn svg { width: 1.3em; height: 1.3em; }
+
+/* ------------------------------ chips ------------------------------ */
+.chip {
+  display: inline-block; padding: .1em .7em; border-radius: 999px;
+  font-size: .78em; font-weight: 600; background: var(--surface-2);
+  color: var(--text-soft); white-space: nowrap;
+}
+.chip-tag    { background: var(--primary-soft); color: var(--primary-deep); }
+.chip-danger { background: var(--danger-soft); color: var(--danger); }
+.chip-warn   { background: var(--warn-soft); color: var(--warn); }
+.chip-info   { background: var(--accent-soft); color: var(--accent); }
+.chip-sm     { font-size: .7em; }
+
+/* ------------------------------ inputs ----------------------------- */
+.input {
+  font: inherit; color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .5em .8em;
+  width: 100%;
+  min-width: 0;
+  transition: border-color .15s;
+}
+.input:hover { border-color: var(--driftwood); }
+.input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-soft); }
+.input::placeholder { color: var(--text-soft); opacity: .8; }
+textarea.input { resize: vertical; line-height: 1.5; }
+.input-sm { font-size: .85em; padding: .3em .6em; width: auto; }
+select.input { appearance: auto; }
+
+label {
+  display: block; font-size: .9em; font-weight: 600; color: var(--text-soft);
+}
+label > .input { margin-top: .25em; font-weight: 400; font-size: 1.05em; }
+
+.check-label {
+  display: flex; align-items: center; gap: .5em;
+  font-weight: 500; color: var(--text); cursor: pointer; font-size: .95em;
+}
+.check-label input { accent-color: var(--primary); width: 1.1em; height: 1.1em; }
+.check-label.sm { font-size: .8em; }
+
+.radio-fieldset, .check-fieldset {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: .6rem .9rem; display: flex; gap: 1rem; flex-wrap: wrap;
+}
+.radio-fieldset legend, .check-fieldset legend {
+  font-size: .85em; font-weight: 600; color: var(--text-soft); padding: 0 .4em;
+}
+
+/* ---------------------------- form cards --------------------------- */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 1.1rem 1.2rem;
+  display: flex; flex-direction: column; gap: .8rem;
+  min-width: 0;
+}
+.form-card legend, .form-card > h2 {
+  font-family: var(--font-display); font-size: 1.15em; font-weight: 600;
+  padding: 0; margin: 0 0 .2em;
+}
+fieldset.form-card { margin: 0; }
+
+/* --------------------------- generic card -------------------------- */
+/* Neutral surface card used everywhere (dashboard, panels, tiles). */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 1.1rem 1.2rem;
+  min-width: 0;
+}
+.card-flush { padding: 0; overflow: hidden; }
+.card-accent-top    { border-top: 4px solid var(--primary); }
+.card-accent-left   { border-left: 4px solid var(--primary); }
+.card-accent-warn   { border-left: 4px solid var(--danger); }
+.card-accent-info   { border-left: 4px solid var(--accent); }
+
+/* --------------------- segmented control (tabs) -------------------- */
+.seg {
+  display: inline-flex; flex-wrap: wrap; gap: .25rem;
+  background: var(--surface-2); border-radius: 999px; padding: .25rem;
+}
+.seg-btn {
+  border: none; background: transparent; color: var(--text-soft);
+  font: inherit; font-weight: 600; font-size: .9em;
+  padding: .4em 1em; border-radius: 999px; cursor: pointer;
+}
+.seg-btn:hover { color: var(--text); }
+.seg-btn.active { background: var(--surface); color: var(--primary-deep); box-shadow: var(--shadow-card); }
+.seg-btn small { font-weight: 400; opacity: .7; }
+
+/* ------------------------------ alerts ----------------------------- */
+.alert-strip { display: flex; gap: .5rem; flex-wrap: wrap; }
+.alert-pill {
+  padding: .3em 1em; border-radius: 999px; font-size: .85em; font-weight: 600;
+}
+.alert-danger { background: var(--danger-soft); color: var(--danger); }
+.alert-warn   { background: var(--warn-soft); color: var(--warn); }
+.alert-info   { background: var(--accent-soft); color: var(--accent); }
+
+/* ------------------------------ toasts ----------------------------- */
+.toast {
+  background: var(--ink); color: var(--cream);
+  padding: .7em 1.2em; border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
+  text-align: center; font-size: .95em;
+  display: inline-block;
+}
+[data-theme="dark"] .toast { background: var(--sand); color: var(--ink); }
+@media (prefers-color-scheme: dark) { [data-theme="auto"] .toast { background: var(--sand); color: var(--ink); } }
+.toast-success { border-left: 4px solid var(--primary); }
+.toast-warn    { border-left: 4px solid var(--warn); }
+.toast-error   { border-left: 4px solid var(--danger); }
+
+/* ------------------------------ dialog ----------------------------- */
+.app-dialog {
+  border: none; border-radius: var(--radius);
+  background: var(--surface); color: var(--text);
+  box-shadow: var(--shadow-pop);
+  width: min(92vw, 30rem); padding: 0;
+}
+.app-dialog.dialog-wide { width: min(94vw, 42rem); }
+.app-dialog::backdrop { background: rgb(20 26 22 / .45); backdrop-filter: blur(2px); }
+.dialog-body { padding: 1.4rem; display: flex; flex-direction: column; gap: .8rem; }
+.dialog-title { margin: 0; }
+.dialog-message { font-size: 1.05em; }
+.dialog-actions { display: flex; gap: .6rem; justify-content: flex-end; align-items: center; margin-top: .4rem; }
+
+/* ---------------------------- empty state -------------------------- */
+.empty-state {
+  text-align: center; padding: 3rem 1rem; color: var(--text-soft);
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: var(--radius); margin: 1rem 0;
+}
+.empty-state .btn { margin-top: .5rem; }
+
+/* ------------------------------ tables ----------------------------- */
+.stats-table { border-collapse: collapse; width: 100%; }
+.stats-table th, .stats-table td {
+  text-align: left; padding: .35em .5em; border-bottom: 1px solid var(--border);
+  font-size: .92em;
+}
+.stats-table th { color: var(--text-soft); font-weight: 500; }
+.stats-table td { text-align: right; font-variant-numeric: tabular-nums; }

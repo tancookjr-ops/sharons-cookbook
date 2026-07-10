@@ -1,98 +1,48 @@
-/**
- * sw.js — service worker: full offline support for Sharon's Cookbook.
- *
- * Strategy:
- *  - Precache the entire application shell on install (it's small — the
- *    data lives in IndexedDB, not in the cache).
- *  - Cache-first for everything in the shell: the app opens instantly and
- *    works with no network at all.
- *  - Update flow: bump CACHE_VERSION on every release → new worker installs
- *    in the background → app.js shows the "Update now" banner → user clicks
- *    → SKIP_WAITING → controllerchange → reload. Old caches are deleted on
- *    activate.
- */
+/* ==================================================================
+   sw.js — Sharon's Cookbook service worker.
+   Cache-first offline shell. To SHIP AN UPDATE: bump VERSION below and
+   push — installed phones see "Update ready" on next launch.
+   ================================================================== */
 
-const CACHE_VERSION = 'sc-v1.0.0';
+const VERSION = 'v1.0.0';
+const CACHE = 'sharons-cookbook-' + VERSION;
 
-/** Every file the app needs to run offline. Keep in sync with the repo. */
-const SHELL = [
+const ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/app.css',
-  './css/layout.css',
-  './css/forms.css',
-  './css/dashboard.css',
-  './css/recipes.css',
-  './css/planner.css',
-  './css/pantry.css',
-  './css/shopping.css',
-  './css/garden.css',
-  './js/app.js',
-  './js/utilities.js',
-  './js/database.js',
-  './js/recipes.js',
-  './js/planner.js',
-  './js/pantry.js',
-  './js/shopping.js',
-  './js/garden.js',
-  './js/settings.js',
-  './js/backup.js',
-  './js/importer.js',
-  './js/dashboard.js',
-  './data/starter-import.json',
-  './data/sample-import.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon.png',
+  './styles.css', './base.css', './components.css', './patterns.css',
+  './tokens/fonts.css', './tokens/colors.css', './tokens/typography.css', './tokens/spacing.css', './tokens/shape.css',
+  './units.js', './data.js',
+  './app.jsx', './screens-main.jsx', './screens-more.jsx',
+  './recipes/build.js', './recipes/breakfast.js', './recipes/mains.js', './recipes/soups.js',
+  './recipes/salads.js', './recipes/sides-breads.js', './recipes/sauces-preserves.js',
+  './recipes/snacks-desserts.js', './recipes/drinks.js',
+  './icons/app-icon-192.png', './icons/app-icon-512.png', './icons/app-icon-maskable-512.png', './icons/apple-touch-icon.png',
+  'https://unpkg.com/react@18.3.1/umd/react.development.js',
+  'https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js',
+  'https://unpkg.com/@babel/standalone@7.29.0/babel.min.js',
 ];
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then(cache => cache.addAll(SHELL))
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k.indexOf('sharons-cookbook-') === 0).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil((async () => {
-    // Drop caches from previous versions.
-    for (const key of await caches.keys()) {
-      if (key !== CACHE_VERSION) await caches.delete(key);
-    }
-    await self.clients.claim();
-  })());
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
-self.addEventListener('message', event => {
-  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
-});
-
-self.addEventListener('fetch', event => {
-  const { request } = event;
-  if (request.method !== 'GET') return;
-  const url = new URL(request.url);
-  if (url.origin !== location.origin) return; // never touch cross-origin
-
-  event.respondWith((async () => {
-    const cache = await caches.open(CACHE_VERSION);
-
-    // Cache-first: the shell never changes within a version.
-    const cached = await cache.match(request, { ignoreSearch: true });
-    if (cached) return cached;
-
-    try {
-      const response = await fetch(request);
-      // Opportunistically cache same-origin GETs (e.g. future data files).
-      if (response.ok) cache.put(request, response.clone());
-      return response;
-    } catch {
-      // Offline and not cached: navigations fall back to the app shell.
-      if (request.mode === 'navigate') {
-        const shell = await cache.match('./index.html');
-        if (shell) return shell;
-      }
-      return new Response('Offline', { status: 503, statusText: 'Offline' });
-    }
-  })());
+self.addEventListener('fetch', (e) => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || fetch(e.request))
+  );
 });
