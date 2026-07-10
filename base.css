@@ -1,0 +1,69 @@
+/* ==================================================================
+   base.css — reset + base element styles.
+
+   Sets the page background, body type, heading faces and link colours
+   from the tokens so anything that links styles.css inherits the brand
+   look without any classes. Verbatim from css/app.css.
+   ================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* The hidden attribute must always win, even over display:flex rules. */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: calc(1rem * var(--font-scale));
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+img, svg { max-width: 100%; display: block; }
+
+/* --- headings: the display serif --- */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  margin: 0 0 .5em;
+  color: var(--text);
+  letter-spacing: var(--tracking-heading);
+}
+h1 { font-size: var(--text-h1); }
+h2 { font-size: var(--text-h2); }
+h3 { font-size: var(--text-h3); }
+h2 small, h1 small {
+  font-family: var(--font-body); font-size: .55em;
+  color: var(--text-soft); font-weight: 400;
+}
+
+p { margin: 0 0 .8em; }
+
+a { color: var(--primary-deep); text-underline-offset: 2px; }
+a:hover { color: var(--primary); }
+
+::selection { background: var(--primary-soft); }
+
+/* Focus visibility — keyboard navigation is a first-class feature. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* --- a few shared helpers used across the app --- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.hint { color: var(--text-soft); font-size: .85em; }
+.spacer { flex: 1; }
