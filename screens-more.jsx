@@ -814,13 +814,13 @@ function PhotoImport({ onToast, onImportRecipes }) {
     try {
       const t = (await window.WebImport.ocrImages(photos.filter(Boolean).map((p) => p.file), setProgress)).trim();
       setText(t);
-      const found = extractRecipes(t);
+      const found = window.extractRecipes(t);
       if (found.length) setDrafts(found);
     } catch (e) { onToast(e.message || 'Could not read the photos', 'error'); }
     setBusy(false);
   }
   function parseNow(t) {
-    const found = extractRecipes(t || '');
+    const found = window.extractRecipes(t || '');
     if (!found.length) { onToast('No measured ingredient lines found — tidy the text so each ingredient is on its own line', 'error'); return; }
     setDrafts(found);
   }
@@ -893,14 +893,14 @@ function YouTubeImport({ onToast, onImportRecipes }) {
       const d = await window.WebImport.ytDescription(vid);
       if (d) {
         setDesc(d); setDescAuto(true);
-        const found = extractRecipes(d);
+        const found = window.extractRecipes(d);
         if (found.length) setDraft(found[0]);
       }
     } catch (e) {}
     setBusy(false);
   }
   function parseNow() {
-    const found = extractRecipes(desc || '');
+    const found = window.extractRecipes(desc || '');
     if (!found.length) { onToast('No measured ingredient lines found — paste the recipe part of the description', 'error'); return; }
     setDraft(found[0]);
   }

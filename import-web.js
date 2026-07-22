@@ -121,7 +121,7 @@ function extractWebRecipes(html, url) {
   if (micro) return [micro];
   /* last resort: heuristic scan of the page text */
   let host = ''; try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) {}
-  return extractRecipes(htmlToText(html)).map((d) => ({
+  return window.extractRecipes(window.htmlToText(html)).map((d) => ({
     title: d.title,
     ingredients: d.ingredients.map((i) => ((i.amount != null ? i.amount + ' ' : '') + (i.unit ? i.unit + ' ' : '') + i.name).trim()),
     steps: d.steps, servings: 0, prepMinutes: 0, cookMinutes: 0, image: '', category: '', cuisine: '', calories: 0, sourceUrl: url, host, exact: false,
@@ -145,12 +145,12 @@ function draftToRecipe(d, opts) {
   opts = opts || {};
   let ings = d.ingredients.map((line) => {
     if (typeof line !== 'string') return line;
-    const p = classifyIngredient(line);
+    const p = window.classifyIngredient(line);
     return p || { amount: null, unit: '', name: line };
   });
   const tags = ['imported'];
   if (opts.crit && Object.values(opts.crit).some(Boolean)) {
-    const res = analyzeDraft({ ingredients: ings }, opts.crit, true);
+    const res = window.analyzeDraft({ ingredients: ings }, opts.crit, true);
     if (res.fixable.length) { ings = res.ingredients; tags.push('amended'); }
   }
   return {
