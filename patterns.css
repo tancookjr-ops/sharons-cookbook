@@ -506,6 +506,18 @@ tr.row-editing td { background: var(--primary-soft); }
   }
 }
 
+/* ================= phone-first frame consistency ==================
+   The app is used on phones and tablets: no page may widen the layout
+   viewport (that pushed the tab bar off-screen and forced zooming).
+   Wide content scrolls inside its own container instead. */
+html, body { max-width: 100%; overflow-x: clip; }
+.app-shell { max-width: 100vw; }
+.main { min-width: 0; max-width: 100%; overflow-x: clip; }
+.main img, .main svg, .main video { max-width: 100%; }
+.main table { max-width: 100%; }
+.main .input, .main select, .main textarea { max-width: 100%; min-width: 0; }
+.pantry-group { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
 /* ============================== pantry ============================ */
 .pantry-toolbar { display: flex; gap: .8rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
 .pantry-toolbar .input { flex: 1 1 12rem; max-width: 20rem; }

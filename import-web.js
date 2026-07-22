@@ -157,7 +157,9 @@ function readerToDrafts(md, url) {
   const tM = md.match(/^Title:\s*(.+)$/m);
   const clean = (s) => s.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_`]/g, '').trim();
   const lines = md.split(/\r?\n/).map(clean);
-  let title = tM ? clean(tM[1]).replace(/\s*[-|–].{0,40}$/, '').trim() : '';
+  /* page H1 is the recipe name; the Title: meta carries site suffixes */
+  const h1 = lines.find((l) => /^#\s+\S/.test(l));
+  let title = h1 ? h1.replace(/^#+\s*/, '') : (tM ? clean(tM[1]).split(/\s+[|–—]\s+|\s+-\s+/)[0].trim() : '');
   const ingStart = /^#{0,6}\s*ingredients\b/i;
   const stepStart = /^#{0,6}\s*(instructions|directions|method|steps|preparation|how to (?:make|prepare))\b/i;
   const sectionEnd = /^#{0,6}\s*(notes|nutrition(?:al)? (?:facts|information)|nutrition\b|equipment|video|faq|storage|tips|serving suggestions|related|comments|leave a reply|you may also|more recipes|did you make)\b/i;
@@ -177,28 +179,34 @@ function readerToDrafts(md, url) {
     if (/^(for the |for serving|optional:)/i.test(l) || /:$/.test(l)) continue; /* sub-group headings */
     if (mode === 'ing') {
       if (l.length > 140) continue;
+      /* wrapped continuation of the previous ingredient line */
+      if (!isBullet && ings.length && (/,\s*$/.test(ings[ings.length - 1]) || /^\d/.test(l) && l.length < 20)) { ings[ings.length - 1] += ' ' + l; continue; }
       if (isBullet || /\d/.test(l) || /^[a-z]/i.test(l) && l.split(' ').length <= 8) ings.push(l);
     } else if (mode === 'step') {
+      /* a line that isn't its own bullet and reads like a continuation
+         belongs to the previous step — never split one instruction */
+      if (!isBullet && steps.length && (!/[.!?]$/.test(steps[steps.length - 1]) || /^[a-z(&]/.test(l))) { steps[steps.length - 1] += ' ' + l; continue; }
       if (isBullet || l.length > 15) steps.push(l);
     }
   }
   if (ings.length < 2 || steps.length < 2) return [];
-  const grab = (re) => { const m = md.match(re); return m ? m[1] : ''; };
-  const num = (re) => { const m = md.match(re); return m ? Number(m[1]) : 0; };
-  const prep = textMinutes(grab(/prep(?:aration)?\s*time:?\s*([^\n|]{1,40})/i));
-  let cook = textMinutes(grab(/cook(?:ing)?\s*time:?\s*([^\n|]{1,40})/i));
-  const total = textMinutes(grab(/total\s*time:?\s*([^\n|]{1,40})/i));
+  const flat = lines.join('\n');
+  const grab = (re) => { const m = flat.match(re); return m ? m[1].trim() : ''; };
+  const num = (re) => { const m = flat.match(re); return m ? Number(m[1]) : 0; };
+  const prep = textMinutes(grab(/prep(?:aration)?\s*time\W{0,3}([^\n|]{1,40})/i));
+  let cook = textMinutes(grab(/cook(?:ing)?\s*time\W{0,3}([^\n|]{1,40})/i));
+  const total = textMinutes(grab(/total\s*time\W{0,3}([^\n|]{1,40})/i));
   if (!cook && total > prep) cook = total - prep;
   const nutrition = {
-    calories: num(/calories:?\s*(\d+)/i), protein: num(/protein:?\s*(\d+(?:\.\d+)?)\s*g/i),
-    fat: num(/(?:^|\s)fat:?\s*(\d+(?:\.\d+)?)\s*g/i), carbs: num(/carb(?:ohydrate)?s?:?\s*(\d+(?:\.\d+)?)\s*g/i),
-    fibre: num(/fib(?:re|er):?\s*(\d+(?:\.\d+)?)\s*g/i), sugar: num(/sugar:?\s*(\d+(?:\.\d+)?)\s*g/i),
+    calories: num(/calories\W{0,3}(\d+)/i), protein: num(/protein\W{0,3}(\d+(?:\.\d+)?)/i),
+    fat: num(/(?:^|[^a-z])fat\W{0,3}(\d+(?:\.\d+)?)/i), carbs: num(/carb(?:ohydrate)?s?\W{0,3}(\d+(?:\.\d+)?)/i),
+    fibre: num(/fib(?:re|er)\W{0,3}(\d+(?:\.\d+)?)/i), sugar: num(/sugar\W{0,3}(\d+(?:\.\d+)?)/i),
   };
   return [{
     title: title || 'Untitled recipe', ingredients: ings, steps,
-    servings: num(/(?:servings|serves|yield):?\s*(\d+)/i) || 0, yield: grab(/yield:?\s*([^\n|]{1,40})/i).trim(),
+    servings: num(/(?:servings|serves)\W{0,3}(\d+)/i) || 0, yield: grab(/^yields?\W{0,3}([^\n|]{1,40})/im),
     prepMinutes: prep, cookMinutes: cook, image: '',
-    category: grab(/course:?\s*([a-z &,-]{3,30})/i).trim(), cuisine: grab(/cuisine:?\s*([a-z &,-]{3,30})/i).trim(),
+    category: grab(/course\W{0,3}([a-z &,-]{3,30})/i), cuisine: grab(/cuisine\W{0,3}([a-z &,-]{3,30})/i),
     calories: nutrition.calories, nutrition, sourceUrl: url, host,
     exact: true, /* lines are verbatim from the page's recipe card */
   }];

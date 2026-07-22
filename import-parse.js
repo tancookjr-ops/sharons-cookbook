@@ -165,18 +165,38 @@ function parseAmount(s) {
 }
 
 const ING_RE = new RegExp('^\\s*(?:[-\u2022*\u25e6\u2023]\\s*)?((?:\\d[\\d\\s\\/.,]*|[\u00bc\u00bd\u00be\u2153\u2154\u215b\u215c\u215d\u215e])\\s*)?(' + UNIT_WORDS + ')?\\.?\\s+(.{2,80})$', 'i');
+/* trailing-amount style: "Chopped pecans, 3/4 cup" / "Salt, 1/4 tsp." */
+const ING_TAIL_RE = new RegExp('^\\s*(?:[-\u2022*\u25e6\u2023]\\s*)?(.{2,80}?),\\s*((?:\\d[\\d\\s\\/.,]*|[\u00bc\u00bd\u00be\u2153\u2154\u215b\u215c\u215d\u215e])\\s*)(' + UNIT_WORDS + ')?\\.?\\s*(\\([^)]*\\))?\\s*$', 'i');
+
+const WORD_NUMS = { a: '1', an: '1', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: '10', eleven: '11', twelve: '12' };
+const WORD_FRACS = { half: '2', halves: '2', third: '3', thirds: '3', fourth: '4', fourths: '4', quarter: '4', quarters: '4', eighth: '8', eighths: '8' };
+
+/* Normalize spelled-out and oddly punctuated amounts so ING_RE can see
+   them: "three-fourths cup" → "3/4 cup", "1/4th tsp." → "1/4 tsp.",
+   "one cup" → "1 cup", "1, 1/2 cups" → "1 1/2 cups". */
+function normIngLine(line) {
+  let s = String(line).replace(/\s+/g, ' ').trim();
+  s = s.replace(/(\d+\/\d+)(?:st|nd|rd|th)\b/gi, '$1');
+  s = s.replace(/(\d)\s*,\s*(\d+\/\d+)/g, '$1 $2');
+  s = s.replace(/\b(one|two|three|four|five|six|seven|a|an)[-\s](half|halves|third|thirds|fourth|fourths|quarter|quarters|eighth|eighths)\b/gi, (mm, n, f) => (WORD_NUMS[n.toLowerCase()] || '1') + '/' + WORD_FRACS[f.toLowerCase()]);
+  s = s.replace(new RegExp('\\b(a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\s+(' + UNIT_WORDS + ')\\b', 'gi'), (mm, n, u) => WORD_NUMS[n.toLowerCase()] + ' ' + u);
+  return s;
+}
 
 function classifyIngredient(line) {
+  line = normIngLine(line);
+  let amtStr, unitStr, name;
   const m = line.match(ING_RE);
-  if (!m) return null;
-  const hasAmt = !!m[1];
-  const hasUnit = !!m[2];
-  if (!hasAmt && !hasUnit) return null;
-  let name = m[3].trim().replace(/[,.;]$/, '');
-  /* strip leading "of " */
-  name = name.replace(/^of\s+/i, '');
+  if (m && (m[1] || m[2])) { amtStr = m[1]; unitStr = m[2]; name = m[3].trim(); }
+  else {
+    const t = line.match(ING_TAIL_RE);
+    if (!t || !t[2]) return null;
+    amtStr = t[2]; unitStr = t[3];
+    name = (t[1].trim() + (t[4] ? ' ' + t[4] : '')).trim();
+  }
+  name = name.replace(/[,.;]$/, '').replace(/^of\s+/i, '').trim();
   if (name.length < 2 || /^(and|or|the|with|into|until)\b/i.test(name)) return null;
-  return { amount: parseAmount(m[1]), unit: hasUnit ? m[2].toLowerCase().replace(/^tablespoons?$/, 'tbsp').replace(/^teaspoons?$/, 'tsp').replace(/^grams?$/, 'g').replace(/^(litres?|liters?)$/, 'l').replace(/^ounces?$/, 'oz').replace(/^pounds?$/, 'lb').replace(/^cups$/, 'cup') : '', name };
+  return { amount: parseAmount(amtStr), unit: unitStr ? unitStr.toLowerCase().replace(/^tablespoons?$/, 'tbsp').replace(/^teaspoons?$/, 'tsp').replace(/^grams?$/, 'g').replace(/^(litres?|liters?)$/, 'l').replace(/^ounces?$/, 'oz').replace(/^pounds?$/, 'lb').replace(/^cups$/, 'cup') : '', name };
 }
 
 function looksLikeTitle(line) {
