@@ -4,7 +4,7 @@
    push — installed phones see "Update ready" on next launch.
    ================================================================== */
 
-const VERSION = 'v1.2.1';
+const VERSION = 'v1.2.3';
 const CACHE = 'mycookbook-' + VERSION;
 
 const ASSETS = [
@@ -25,7 +25,9 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+  /* Cache files individually so one missing file (404) doesn't abort the
+     whole install — addAll is all-or-nothing and silently kills updates. */
+  e.waitUntil(caches.open(CACHE).then((c) => Promise.all(ASSETS.map((a) => c.add(a).catch(() => {})))));
 });
 
 self.addEventListener('activate', (e) => {

@@ -69,6 +69,12 @@
       document.body.appendChild(b);
     }
     if (reg.waiting && navigator.serviceWorker.controller) offerUpdate(reg.waiting);
+    /* PWAs launched from the home screen don't reliably re-check for a new
+       SW — force a check now and whenever the app returns to the foreground. */
+    reg.update().catch(function () {});
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') reg.update().catch(function () {});
+    });
     reg.addEventListener('updatefound', function () {
       var nw = reg.installing;
       if (!nw) return;
