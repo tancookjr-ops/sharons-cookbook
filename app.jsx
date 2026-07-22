@@ -197,6 +197,33 @@ function App({ user, onSignOut }) {
     showToast(deducted + ' ingredient' + (deducted === 1 ? '' : 's') + ' deducted from pantry' + (skipped ? ' · ' + skipped + ' not tracked' : ''));
   }
 
+  function deleteRecipe(id) {
+    const r = recipes.find((x) => x.recipeId === id);
+    setRecipes((rs) => rs.filter((x) => x.recipeId !== id));
+    setPlans((ps) => ps.filter((p) => p.recipeId !== id));
+    showToast((r ? '“' + r.title + '”' : 'Recipe') + ' deleted', 'error');
+  }
+
+  /* Backup: the account's whole saved state as a downloadable JSON file.
+     Restore: validate, write to this account's save slot, reload. */
+  function backupData() {
+    const data = { theme, recipes, household, botanicals, plans, pantry, measure, stores, keepAwake, densities };
+    const payload = { app: 'myCookbook', backupVersion: 1, exportedAt: new Date().toISOString(), account: user.email, data };
+    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'myCookbook-backup-' + (user.username || 'user') + '-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    showToast('Backup downloaded — keep it somewhere safe');
+  }
+  function restoreData(payload) {
+    const d = payload && payload.data;
+    if (!d || !Array.isArray(d.recipes)) throw new Error('That file isn’t a myCookbook backup');
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); } catch (e) { throw new Error('Could not save the restored data on this device'); }
+    window.location.reload();
+  }
+
   function importRecipes(list) {
     if (!list.length) return;
     setRecipes((rs) => [...list, ...rs]);
@@ -207,12 +234,12 @@ function App({ user, onSignOut }) {
   if (route.name === 'dashboard') {
     screen = <DashboardScreen recipes={recipes} plans={plans} pantry={pantry} garden={D.garden} household={household} botanicals={botanicals} activity={D.activity} onOpenRecipe={openRecipe} go={go} onNewRecipe={() => go('recipe-new')} />;
   } else if (route.name === 'recipes') {
-    screen = <RecipesScreen recipes={recipes} onOpenRecipe={openRecipe} onNewRecipe={() => go('recipe-new')} />;
+    screen = <RecipesScreen recipes={recipes} onOpenRecipe={openRecipe} onNewRecipe={() => go('recipe-new')} onDeleteRecipe={deleteRecipe} />;
   } else if (route.name === 'recipe-new') {
     screen = <NewRecipeScreen recipes={recipes} onToast={showToast} onCancel={goBack} onCreate={(rec) => { setRecipes((rs) => [rec, ...rs]); showToast('“' + rec.title + '” added to Recipes'); navigate({ name: 'recipe', id: rec.recipeId }); }} />;
   } else if (route.name === 'recipe') {
     const r = recipes.find((x) => x.recipeId === route.id);
-    screen = <RecipeDetailScreen recipe={r} pantry={pantry} measure={measure} onToggleFav={toggleFav} onUpdateIngredients={updateRecipeIngredients} onUpdateRecipe={updateRecipe} onBack={goBack} onToast={showToast} />;
+    screen = <RecipeDetailScreen recipe={r} pantry={pantry} measure={measure} onToggleFav={toggleFav} onUpdateIngredients={updateRecipeIngredients} onUpdateRecipe={updateRecipe} onDeleteRecipe={deleteRecipe} onBack={goBack} onToast={showToast} />;
   } else if (route.name === 'planner') {
     screen = <PlannerScreen recipes={recipes} plans={plans} setPlans={setPlans} pantry={pantry} onAteMeal={consumeMeal} onAddGroceries={addGroceries} onOpenRecipe={openRecipe} onToast={showToast} />;
   } else if (route.name === 'pantry') {
@@ -224,7 +251,7 @@ function App({ user, onSignOut }) {
   } else if (route.name === 'garden') {
     screen = <GardenScreen garden={D.garden} onToast={showToast} />;
   } else if (route.name === 'import') {
-    screen = <ImportScreen onToast={showToast} onImportRecipes={importRecipes} />;
+    screen = <ImportScreen onToast={showToast} onImportRecipes={importRecipes} onBackup={backupData} onRestore={restoreData} />;
   } else if (route.name === 'settings') {
     screen = <SettingsScreen user={user} onSignOut={onSignOut} theme={theme} onTheme={setTheme} measure={measure} onMeasure={setMeasure} stores={stores} onStores={setStores} keepAwake={keepAwake} onKeepAwake={setKeepAwake} densities={densities} onDensities={setDensities} onErase={eraseAll} onToast={showToast} />;
   }
