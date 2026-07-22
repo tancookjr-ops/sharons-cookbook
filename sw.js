@@ -4,7 +4,7 @@
    push — installed phones see "Update ready" on next launch.
    ================================================================== */
 
-const VERSION = 'v1.2.6';
+const VERSION = 'v1.2.7';
 const CACHE = 'mycookbook-' + VERSION;
 
 const ASSETS = [

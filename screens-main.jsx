@@ -62,7 +62,7 @@ function RecipeCardEl({ recipe, onOpen }) {
   const letter = (r.title || '?').trim().charAt(0).toUpperCase();
   return (
     <a className="recipe-card" href="#" onClick={(e) => { e.preventDefault(); onOpen(r.recipeId); }}>
-      <div className="recipe-card-img recipe-card-placeholder" aria-hidden="true">{letter}</div>
+      <div className="recipe-card-img recipe-card-placeholder" aria-hidden="true">{r.image ? <img src={r.image} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} /> : letter}</div>
       <div className="recipe-card-body">
         <h3 className="recipe-card-title">{r.title}{r.favourite ? <span className="fav-star" aria-label="favourite"> ★</span> : null}</h3>
         {r.subtitle ? <p className="recipe-card-sub">{r.subtitle}</p> : null}
@@ -303,7 +303,7 @@ function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngr
   const [meta, setMeta] = React.useState(null);
   const editing = meta !== null;
   function startEditing() {
-    setMeta({ title: r.title, subtitle: r.subtitle || '', description: r.description || '', category: r.category, cuisine: r.cuisine, mealType: r.mealType, difficulty: r.difficulty, prepMinutes: r.prepMinutes, cookMinutes: r.cookMinutes, servings: r.servings, yield: r.yield || '', tags: (r.tags || []).join(', ') });
+    setMeta({ title: r.title, subtitle: r.subtitle || '', description: r.description || '', category: r.category, cuisine: r.cuisine, mealType: r.mealType, difficulty: r.difficulty, prepMinutes: r.prepMinutes, cookMinutes: r.cookMinutes, servings: r.servings, yield: r.yield || '', servingSize: r.servingSize || '', notes: r.notes || '', tags: (r.tags || []).join(', ') });
   }
   function saveEditing() {
     const prep = Math.max(0, Number(meta.prepMinutes) || 0), cook = Math.max(0, Number(meta.cookMinutes) || 0);
@@ -311,7 +311,7 @@ function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngr
       title: meta.title.trim() || r.title, subtitle: meta.subtitle.trim(), description: meta.description.trim(),
       category: meta.category.trim() || r.category, cuisine: meta.cuisine.trim() || r.cuisine, mealType: meta.mealType.trim() || r.mealType, difficulty: meta.difficulty,
       prepMinutes: prep, cookMinutes: cook, totalMinutes: prep + cook,
-      servings: Math.max(1, Number(meta.servings) || r.servings), yield: meta.yield.trim(),
+      servings: Math.max(1, Number(meta.servings) || r.servings), yield: meta.yield.trim(), servingSize: meta.servingSize.trim(), notes: meta.notes.trim(),
       tags: meta.tags.split(',').map((t) => t.trim()).filter(Boolean),
     });
     setMeta(null);
@@ -326,6 +326,7 @@ function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngr
       <nav className="crumbs"><a href="#" onClick={(e) => { e.preventDefault(); onBack(); }}>← Back</a></nav>
 
       <header className="recipe-hero">
+        {r.image ? <img className="recipe-hero-img" src={r.image} alt={r.title} loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} /> : null}
         <div className="recipe-hero-text">
           <h1>{r.title}</h1>
           {r.subtitle ? <p className="recipe-subtitle">{r.subtitle}</p> : null}
@@ -342,6 +343,7 @@ function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngr
             <div><dt>Cook</dt><dd>{r.cookMinutes} min</dd></div>
             <div><dt>Total</dt><dd>{r.totalMinutes} min</dd></div>
             <div><dt>Serves</dt><dd>{r.servings}{r.yield ? ' · ' + r.yield : ''}</dd></div>
+            {r.servingSize ? <div><dt>Serving size</dt><dd>{r.servingSize}</dd></div> : null}
             {r.rating ? <div><dt>Rating</dt><dd>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</dd></div> : null}
           </dl>
         </div>
@@ -360,6 +362,8 @@ function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngr
           <label>Cook (min) <input className="input" type="number" min="0" value={meta.cookMinutes} onChange={(e) => setMeta({ ...meta, cookMinutes: e.target.value })} /></label>
           <label>Servings <input className="input" type="number" min="1" value={meta.servings} onChange={(e) => setMeta({ ...meta, servings: e.target.value })} /></label>
           <label>Yield <input className="input" value={meta.yield} placeholder="e.g. 24 oatcakes" onChange={(e) => setMeta({ ...meta, yield: e.target.value })} /></label>
+          <label>Serving size <input className="input" value={meta.servingSize} placeholder="e.g. 125 g / 1 scoop" onChange={(e) => setMeta({ ...meta, servingSize: e.target.value })} /></label>
+          <label className="span-2">Notes <textarea className="input" rows="3" value={meta.notes} placeholder="Storage, variations, tips…" onChange={(e) => setMeta({ ...meta, notes: e.target.value })}></textarea></label>
           <label className="span-2">Tags <input className="input" value={meta.tags} placeholder="comma, separated" onChange={(e) => setMeta({ ...meta, tags: e.target.value })} /></label>
           <div className="span-2 pantry-editor-actions">
             <button className="btn btn-primary" onClick={saveEditing}>Save changes</button>
@@ -484,9 +488,10 @@ function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngr
         </section>
       ) : null}
 
-      {r.notes ? <section className="recipe-panel"><h2>Notes</h2><p>{r.notes}</p></section> : null}
+      {r.notes ? <section className="recipe-panel"><h2>Notes</h2>{String(r.notes).split('\n').filter(Boolean).map((n, k) => <p key={k}>{n}</p>)}</section> : null}
 
       <footer className="recipe-foot">
+        {r.sourceUrl ? <p><a href={r.sourceUrl} target="_blank" rel="noopener noreferrer">View the original recipe ↗</a></p> : null}
         {r.source ? <p>Source: {r.source}</p> : null}
         <p>Added 8 July 2026 · Updated 8 July 2026 · v1</p>
       </footer>
