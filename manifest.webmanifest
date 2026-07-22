@@ -1,6 +1,6 @@
 {
-  "name": "Sharon's Cookbook",
-  "short_name": "Cookbook",
+  "name": "myCookbook",
+  "short_name": "myCookbook",
   "description": "Offline-first recipe book, meal planner, pantry and shopping lists.",
   "start_url": ".",
   "scope": ".",

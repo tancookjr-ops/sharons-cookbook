@@ -77,7 +77,7 @@ function RecipeCardEl({ recipe, onOpen }) {
 }
 
 /* ------------------------------ Dashboard -------------------------- */
-function DashboardScreen({ recipes, plans, pantry, garden, household, botanicals, activity, onOpenRecipe, go }) {
+function DashboardScreen({ recipes, plans, pantry, garden, household, botanicals, activity, onOpenRecipe, go, onNewRecipe }) {
   const todayPlans = plans.filter((p) => p.date === TODAY);
   const byMeal = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
   todayPlans.sort((a, b) => byMeal.indexOf(a.mealType) - byMeal.indexOf(b.mealType));
@@ -116,7 +116,7 @@ function DashboardScreen({ recipes, plans, pantry, garden, household, botanicals
         <section className="dash-card">
           <h2>Quick actions</h2>
           <div className="dash-actions">
-            <a className="btn btn-primary" href="#" onClick={(e) => e.preventDefault()}>＋ New recipe</a>
+            <a className="btn btn-primary" href="#" onClick={(e) => { e.preventDefault(); onNewRecipe(); }}>＋ New recipe</a>
             <a className="btn btn-ghost" href="#" onClick={(e) => { e.preventDefault(); go('planner'); }}>Plan meals</a>
             <a className="btn btn-ghost" href="#" onClick={(e) => { e.preventDefault(); go('shopping'); }}>Household list</a>
             <a className="btn btn-ghost" href="#" onClick={(e) => { e.preventDefault(); go('import'); }}>Imports</a>
@@ -192,7 +192,7 @@ const QUICK_FILTERS = [
   { id: 'raw', label: 'No-cook' },
 ];
 
-function RecipesScreen({ recipes, onOpenRecipe }) {
+function RecipesScreen({ recipes, onOpenRecipe, onNewRecipe }) {
   const [q, setQ] = React.useState('');
   const [quick, setQuick] = React.useState('');
   const [cat, setCat] = React.useState('');
@@ -237,7 +237,7 @@ function RecipesScreen({ recipes, onOpenRecipe }) {
       <header className="page-head">
         <h1>Recipes</h1>
         <div className="page-actions">
-          <a className="btn btn-primary" href="#" onClick={(e) => e.preventDefault()}>＋ New recipe</a>
+          <a className="btn btn-primary" href="#" onClick={(e) => { e.preventDefault(); onNewRecipe(); }}>＋ New recipe</a>
         </div>
       </header>
 
@@ -494,4 +494,51 @@ function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngr
   );
 }
 
-Object.assign(window, { fmtAmount, scaleAmount, norm, findPantryMatch, pantryAlerts, daysUntil, isoAdd, mondayOf, niceDate, BrandMark, RecipeCardEl, DashboardScreen, RecipesScreen, RecipeDetailScreen, DAY_NAMES, TODAY });
+/* ------------------------------ New recipe -------------------------- */
+function NewRecipeScreen({ recipes, onCreate, onCancel, onToast }) {
+  const [f, setF] = React.useState({ title: '', subtitle: '', category: '', cuisine: '', mealType: 'Dinner', servings: 4, prepMinutes: 0, cookMinutes: 0, ings: '', steps: '' });
+  const cats = [...new Set(recipes.map((r) => r.category).filter(Boolean))].sort();
+  const cuisines = [...new Set(recipes.map((r) => r.cuisine).filter(Boolean))].sort();
+  function set(k) { return (e) => setF({ ...f, [k]: e.target.value }); }
+  function save() {
+    if (!f.title.trim()) { onToast('Give the recipe a title', 'error'); return; }
+    const ings = f.ings.split('\n').map((s) => s.trim()).filter(Boolean).map((line) => classifyIngredient(line) || { amount: null, unit: '', name: line });
+    const steps = f.steps.split('\n').map((s) => s.trim().replace(/^\d+[.)]\s*/, '')).filter(Boolean);
+    if (!ings.length) { onToast('Add at least one ingredient', 'error'); return; }
+    const prep = Math.max(0, Number(f.prepMinutes) || 0), cook = Math.max(0, Number(f.cookMinutes) || 0);
+    onCreate({
+      recipeId: 'rec_new_' + Date.now(), title: f.title.trim(), subtitle: f.subtitle.trim(),
+      category: f.category.trim() || 'Uncategorised', cuisine: f.cuisine.trim() || 'Other', mealType: f.mealType, difficulty: 'Easy',
+      prepMinutes: prep, cookMinutes: cook, totalMinutes: prep + cook, servings: Math.max(1, Number(f.servings) || 1),
+      tags: [], ingredients: ings, instructions: steps.map((s) => ({ instruction: s })),
+      nutrition: { calories: 0, protein: 0, fat: 0, carbs: 0, fibre: 0, sugar: 0 },
+    });
+  }
+  return (
+    <div>
+      <header className="page-head"><h1>New recipe</h1></header>
+      <div className="form-card recipe-edit-grid" style={{ display: 'grid', gap: '.7rem', gridTemplateColumns: '1fr 1fr' }}>
+        <label className="span-2" style={{ gridColumn: '1 / -1' }}>Title <input className="input" value={f.title} autoFocus onChange={set('title')} placeholder="e.g. Rhubarb Crumble" /></label>
+        <label className="span-2" style={{ gridColumn: '1 / -1' }}>Subtitle <input className="input" value={f.subtitle} onChange={set('subtitle')} /></label>
+        <label>Category <input className="input" list="nr-cats" value={f.category} onChange={set('category')} /><datalist id="nr-cats">{cats.map((c) => <option key={c} value={c}></option>)}</datalist></label>
+        <label>Cuisine <input className="input" list="nr-cuisines" value={f.cuisine} onChange={set('cuisine')} /><datalist id="nr-cuisines">{cuisines.map((c) => <option key={c} value={c}></option>)}</datalist></label>
+        <label>Meal <select className="input" value={f.mealType} onChange={set('mealType')}>{['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack'].map((m) => <option key={m}>{m}</option>)}</select></label>
+        <label>Servings <input className="input" type="number" min="1" value={f.servings} onChange={set('servings')} /></label>
+        <label>Prep (min) <input className="input" type="number" min="0" value={f.prepMinutes} onChange={set('prepMinutes')} /></label>
+        <label>Cook (min) <input className="input" type="number" min="0" value={f.cookMinutes} onChange={set('cookMinutes')} /></label>
+        <label style={{ gridColumn: '1 / -1' }}>Ingredients — one per line, amount first
+          <textarea className="input" rows="7" value={f.ings} onChange={set('ings')} placeholder={'2 cups rolled oats\n1 tbsp maple syrup\n\u00bd tsp salt'} style={{ fontFamily: 'var(--font-mono)' }}></textarea>
+        </label>
+        <label style={{ gridColumn: '1 / -1' }}>Method — one step per line
+          <textarea className="input" rows="7" value={f.steps} onChange={set('steps')} placeholder={'Preheat the oven to 180 \u00b0C.\nMix the dry ingredients\u2026'}></textarea>
+        </label>
+        <div className="import-btns" style={{ gridColumn: '1 / -1' }}>
+          <button className="btn btn-primary" onClick={save}>Save recipe</button>
+          <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { fmtAmount, scaleAmount, norm, findPantryMatch, pantryAlerts, daysUntil, isoAdd, mondayOf, niceDate, BrandMark, RecipeCardEl, DashboardScreen, RecipesScreen, RecipeDetailScreen, NewRecipeScreen, DAY_NAMES, TODAY });

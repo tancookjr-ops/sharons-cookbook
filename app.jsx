@@ -19,26 +19,27 @@ const NAV = [
 
 const SEED_STORES = ['Costco', 'Costco online', 'Costco Instacart', 'PC Independent', 'Fresh Cuts', 'No Frills', "Sobey's", 'Walmart', 'Canadian Tire', "Gateway's", "Pete's Fruitique", 'NSLC'];
 
-/* On-device persistence: the whole working state saves to localStorage so
-   hosted app updates never touch Sharon's data. */
-const SAVE_KEY = 'sharons-cookbook-v1';
-function loadSaved() {
-  try { return JSON.parse(localStorage.getItem(SAVE_KEY)) || null; } catch (e) { return null; }
+/* On-device persistence: each account's whole working state saves to its
+   own localStorage key, so hosted app updates never touch anyone's data. */
+function loadSaved(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || null; } catch (e) { return null; }
 }
 
-function App() {
+function App({ user, onSignOut }) {
   const D = window.CookbookData;
-  const saved = React.useMemo(loadSaved, []);
+  const SAVE_KEY = window.CBAuth.dataKey(user.email);
+  const isOwner = window.CBAuth.isSharon(user.email);   /* Sharon keeps the original full collection */
+  const saved = React.useMemo(() => loadSaved(SAVE_KEY), [SAVE_KEY]);
   const [route, setRoute] = React.useState({ name: 'dashboard' });
   const [stack, setStack] = React.useState([]);   /* back history of routes */
   const [theme, setTheme] = React.useState(saved && saved.theme ? saved.theme : 'light');
   const [navOpen, setNavOpen] = React.useState(false);
   const [sideCollapsed, setSideCollapsed] = React.useState(true);
-  const [recipes, setRecipes] = React.useState(saved && saved.recipes ? saved.recipes : D.recipes);
-  const [household, setHousehold] = React.useState(saved && saved.household ? saved.household : D.household);
-  const [botanicals, setBotanicals] = React.useState(saved && saved.botanicals ? saved.botanicals : D.botanicals);
-  const [plans, setPlans] = React.useState(() => (saved && saved.plans ? saved.plans : D.plans.map((p, i) => ({ ...p, planId: 'pl' + i, date: isoAdd('2026-07-06', p.day) }))));
-  const [pantry, setPantry] = React.useState(saved && saved.pantry ? saved.pantry : D.pantry);
+  const [recipes, setRecipes] = React.useState(saved && saved.recipes ? saved.recipes : (isOwner ? D.recipes : window.CBAuth.starterRecipes()));
+  const [household, setHousehold] = React.useState(saved && saved.household ? saved.household : (isOwner ? D.household : []));
+  const [botanicals, setBotanicals] = React.useState(saved && saved.botanicals ? saved.botanicals : (isOwner ? D.botanicals : []));
+  const [plans, setPlans] = React.useState(() => (saved && saved.plans ? saved.plans : (isOwner ? D.plans.map((p, i) => ({ ...p, planId: 'pl' + i, date: isoAdd('2026-07-06', p.day) })) : [])));
+  const [pantry, setPantry] = React.useState(saved && saved.pantry ? saved.pantry : (isOwner ? D.pantry : []));
   const [measure, setMeasure] = React.useState(saved && saved.measure ? saved.measure : { system: 'metric', form: 'volume' });  /* global default */
   const [stores, setStores] = React.useState(saved && saved.stores ? saved.stores : SEED_STORES);
   const [keepAwake, setKeepAwake] = React.useState(saved ? !!saved.keepAwake : false);
@@ -74,6 +75,7 @@ function App() {
   React.useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+  React.useEffect(() => { document.title = user.username + '’s Cookbook · myCookbook'; }, [user]);
 
   /* Screen wake lock: while enabled, ask the browser to keep the screen
      on; re-acquire whenever the app returns to the foreground. */
@@ -195,11 +197,19 @@ function App() {
     showToast(deducted + ' ingredient' + (deducted === 1 ? '' : 's') + ' deducted from pantry' + (skipped ? ' · ' + skipped + ' not tracked' : ''));
   }
 
+  function importRecipes(list) {
+    if (!list.length) return;
+    setRecipes((rs) => [...list, ...rs]);
+    showToast(list.length + ' recipe' + (list.length === 1 ? '' : 's') + ' imported — find them under Recipes');
+  }
+
   let screen = null;
   if (route.name === 'dashboard') {
-    screen = <DashboardScreen recipes={recipes} plans={plans} pantry={pantry} garden={D.garden} household={household} botanicals={botanicals} activity={D.activity} onOpenRecipe={openRecipe} go={go} />;
+    screen = <DashboardScreen recipes={recipes} plans={plans} pantry={pantry} garden={D.garden} household={household} botanicals={botanicals} activity={D.activity} onOpenRecipe={openRecipe} go={go} onNewRecipe={() => go('recipe-new')} />;
   } else if (route.name === 'recipes') {
-    screen = <RecipesScreen recipes={recipes} onOpenRecipe={openRecipe} />;
+    screen = <RecipesScreen recipes={recipes} onOpenRecipe={openRecipe} onNewRecipe={() => go('recipe-new')} />;
+  } else if (route.name === 'recipe-new') {
+    screen = <NewRecipeScreen recipes={recipes} onToast={showToast} onCancel={goBack} onCreate={(rec) => { setRecipes((rs) => [rec, ...rs]); showToast('“' + rec.title + '” added to Recipes'); navigate({ name: 'recipe', id: rec.recipeId }); }} />;
   } else if (route.name === 'recipe') {
     const r = recipes.find((x) => x.recipeId === route.id);
     screen = <RecipeDetailScreen recipe={r} pantry={pantry} measure={measure} onToggleFav={toggleFav} onUpdateIngredients={updateRecipeIngredients} onUpdateRecipe={updateRecipe} onBack={goBack} onToast={showToast} />;
@@ -214,9 +224,9 @@ function App() {
   } else if (route.name === 'garden') {
     screen = <GardenScreen garden={D.garden} onToast={showToast} />;
   } else if (route.name === 'import') {
-    screen = <ImportScreen onToast={showToast} />;
+    screen = <ImportScreen onToast={showToast} onImportRecipes={importRecipes} />;
   } else if (route.name === 'settings') {
-    screen = <SettingsScreen theme={theme} onTheme={setTheme} measure={measure} onMeasure={setMeasure} stores={stores} onStores={setStores} keepAwake={keepAwake} onKeepAwake={setKeepAwake} densities={densities} onDensities={setDensities} onErase={eraseAll} onToast={showToast} />;
+    screen = <SettingsScreen user={user} onSignOut={onSignOut} theme={theme} onTheme={setTheme} measure={measure} onMeasure={setMeasure} stores={stores} onStores={setStores} keepAwake={keepAwake} onKeepAwake={setKeepAwake} densities={densities} onDensities={setDensities} onErase={eraseAll} onToast={showToast} />;
   }
 
   return (
@@ -230,7 +240,7 @@ function App() {
         </button>
         <a className="brand" href="#" onClick={(e) => { e.preventDefault(); go('dashboard'); }}>
           <BrandMark size={29} />
-          <span className="brand-name">Sharon's Cookbook</span>
+          <span className="brand-name">{user.username}’s Cookbook</span>
         </a>
         <div className="topbar-spacer"></div>
         <span className="net-status">Offline-ready</span>
@@ -249,7 +259,7 @@ function App() {
             </li>
           ))}
         </ul>
-        <p className="sidebar-foot">Sharon's Cookbook · v1.0.0 · offline PWA</p>
+        <p className="sidebar-foot">myCookbook · v1.2.0 · offline PWA</p>
       </nav>
       {navOpen ? <div className="sidebar-scrim" onClick={() => setNavOpen(false)}></div> : null}
 
@@ -277,4 +287,13 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+/* Login gate: no session → sign in / create an account; each account
+   opens its own cookbook. */
+function Root() {
+  const [user, setUser] = React.useState(() => window.CBAuth.session());
+  return user
+    ? <App key={user.email} user={user} onSignOut={() => { window.CBAuth.clearSession(); setUser(null); }} />
+    : <LoginScreen onLogin={(u) => { window.CBAuth.setSession(u); setUser(u); }} />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Root />);

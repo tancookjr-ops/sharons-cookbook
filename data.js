@@ -314,7 +314,6 @@
 
   const activity = [
     { summary: 'Imported 200 vegan recipes via AI assistant', rel: 'just now' },
-    { summary: 'Converted “Fish Chowder” → “Corn Chowder” (vegan)', rel: 'just now' },
     { summary: 'Stocked the pantry from the new recipes', rel: 'just now' },
     { summary: 'Harvested 0.6 kg kale', rel: 'yesterday' },
     { summary: 'Planned “Three-Bean Garden Chili” for Monday', rel: '2 days ago' },

@@ -35,7 +35,7 @@ this folder's entire contents in, keeping the folder structure.)
 2. Under *Build and deployment*: Source = **Deploy from a branch**,
    Branch = **main**, folder = **/ (root)** → Save.
 3. Wait ~1 minute. Your app is live at:
-   `https://YOUR-USERNAME.github.io/sharons-cookbook/`
+   `https://tancookjr-ops.github.io/sharons-cookbook/`
 
 Open that URL in a browser and confirm it loads.
 
