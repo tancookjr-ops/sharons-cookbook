@@ -13,16 +13,30 @@
    extractRecipes, analyzeDraft, htmlToText).
    ================================================================== */
 
+function cleanRecipeUrl(u) {
+  try {
+    const x = new URL(u); x.hash = '';
+    Array.from(x.searchParams.keys()).filter((k) => /^(utm_|fbclid|gclid|gbraid|wbraid|mc_|igsh|ref$|si$)/i.test(k)).forEach((k) => x.searchParams.delete(k));
+    return x.href;
+  } catch (e) { return u; }
+}
+
+/* Anti-bot / relay-error pages that come back with HTTP 200. */
+function looksBlocked(t) {
+  return /just a moment|attention required|cf-browser-verification|challenge-platform|enable javascript and cookies|access denied|are you a robot|captcha/i.test(String(t).slice(0, 4000));
+}
+
 async function fetchTextCors(url) {
-  const tries = [url, 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url), 'https://corsproxy.io/?url=' + encodeURIComponent(url)];
+  url = cleanRecipeUrl(url);
+  const tries = [url, 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url), 'https://corsproxy.io/?url=' + encodeURIComponent(url), 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)];
   let last = null;
   for (const u of tries) {
     try {
       const r = await fetch(u, { mode: 'cors' });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const t = await r.text();
-      if (t && t.length > 40) return t;
-      throw new Error('Empty response');
+      if (t && t.length > 40 && !looksBlocked(t)) return t;
+      throw new Error(looksBlocked(t) ? 'Anti-bot page' : 'Empty response');
     } catch (e) { last = e; }
   }
   let host = url; try { host = new URL(url).hostname; } catch (e) {}
@@ -109,6 +123,15 @@ function microdataDraft(doc, url) {
   return { title: titleEl ? titleEl.textContent.trim() : (doc.title || 'Untitled recipe'), ingredients: ings, steps, servings: 0, prepMinutes: 0, cookMinutes: 0, image: '', category: '', cuisine: '', calories: 0, sourceUrl: url, host, exact: true };
 }
 
+function textToDrafts(text, url) {
+  let host = ''; try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) {}
+  return window.extractRecipes(text).map((d) => ({
+    title: d.title,
+    ingredients: d.ingredients.map((i) => ((i.amount != null ? i.amount + ' ' : '') + (i.unit ? i.unit + ' ' : '') + i.name).trim()),
+    steps: d.steps, servings: 0, prepMinutes: 0, cookMinutes: 0, image: '', category: '', cuisine: '', calories: 0, sourceUrl: url, host, exact: false,
+  }));
+}
+
 function extractWebRecipes(html, url) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const out = [];
@@ -120,12 +143,24 @@ function extractWebRecipes(html, url) {
   const micro = microdataDraft(doc, url);
   if (micro) return [micro];
   /* last resort: heuristic scan of the page text */
-  let host = ''; try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) {}
-  return window.extractRecipes(window.htmlToText(html)).map((d) => ({
-    title: d.title,
-    ingredients: d.ingredients.map((i) => ((i.amount != null ? i.amount + ' ' : '') + (i.unit ? i.unit + ' ' : '') + i.name).trim()),
-    steps: d.steps, servings: 0, prepMinutes: 0, cookMinutes: 0, image: '', category: '', cuisine: '', calories: 0, sourceUrl: url, host, exact: false,
-  }));
+  return textToDrafts(window.htmlToText(html), url);
+}
+
+/* Full pipeline for one URL: fetch + structured extraction, then a
+   text-mode reader fallback for pages that hide behind ads/anti-bot. */
+async function fetchRecipesFromUrl(url) {
+  url = cleanRecipeUrl(url);
+  let drafts = [], ferr = null;
+  try { drafts = extractWebRecipes(await fetchTextCors(url), url); } catch (e) { ferr = e; }
+  if (!drafts.length) {
+    try {
+      const r = await fetch('https://r.jina.ai/' + url);
+      const md = r.ok ? await r.text() : '';
+      if (md && md.length > 200 && !looksBlocked(md)) drafts = textToDrafts(md, url);
+    } catch (e) {}
+  }
+  if (!drafts.length && ferr) throw ferr;
+  return drafts;
 }
 
 /* Factual, self-written summary — replaces the page's editorial prose. */
@@ -223,4 +258,4 @@ async function ocrImages(files, onProgress) {
   return out;
 }
 
-window.WebImport = { fetchTextCors, extractWebRecipes, draftToRecipe, factSummary, ytVideoId, ytMetadata, ytDescription, ocrImages };
+window.WebImport = { fetchTextCors, fetchRecipesFromUrl, extractWebRecipes, draftToRecipe, factSummary, ytVideoId, ytMetadata, ytDescription, ocrImages };

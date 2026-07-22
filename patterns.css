@@ -112,6 +112,10 @@
   .menu-btn { display: inline-flex; }
   .app-shell.side-collapsed { grid-template-columns: 0 1fr; }
   .app-shell.side-collapsed .sidebar { display: none; }
+  /* Nav must survive the collapse: bring the tab bar back so every
+     page keeps a persistent navigation bar at any width. */
+  .app-shell.side-collapsed .tabbar { display: grid; }
+  .app-shell.side-collapsed .main { padding-bottom: calc(5.4rem + env(safe-area-inset-bottom)); }
 }
 
 /* --------------------------- page scaffold ------------------------- */
