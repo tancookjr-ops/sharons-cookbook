@@ -57,7 +57,7 @@ function BrandMark({ size = 29 }) {
 }
 
 /* Shared recipe tile (mirrors recipes.js → recipeCardHTML). */
-function RecipeCardEl({ recipe, onOpen }) {
+function RecipeCardEl({ recipe, onOpen, onDelete }) {
   const r = recipe;
   const letter = (r.title || '?').trim().charAt(0).toUpperCase();
   return (
@@ -65,6 +65,7 @@ function RecipeCardEl({ recipe, onOpen }) {
       <div className="recipe-card-img recipe-card-placeholder" aria-hidden="true">{r.image ? <img src={r.image} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} /> : letter}</div>
       <div className="recipe-card-body">
         <h3 className="recipe-card-title">{r.title}{r.favourite ? <span className="fav-star" aria-label="favourite"> ★</span> : null}</h3>
+        {onDelete ? <button className="card-del" aria-label={'Delete ' + r.title} title="Delete recipe" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(r); }}>×</button> : null}
         {r.subtitle ? <p className="recipe-card-sub">{r.subtitle}</p> : null}
         <p className="recipe-card-meta">
           <span>{r.category}</span>
@@ -192,7 +193,8 @@ const QUICK_FILTERS = [
   { id: 'raw', label: 'No-cook' },
 ];
 
-function RecipesScreen({ recipes, onOpenRecipe, onNewRecipe }) {
+function RecipesScreen({ recipes, onOpenRecipe, onNewRecipe, onDeleteRecipe }) {
+  const confirmDel = (r) => { if (window.confirm('Delete “' + r.title + '”? This cannot be undone.')) onDeleteRecipe(r.recipeId); };
   const [q, setQ] = React.useState('');
   const [quick, setQuick] = React.useState('');
   const [cat, setCat] = React.useState('');
@@ -269,7 +271,7 @@ function RecipesScreen({ recipes, onOpenRecipe, onNewRecipe }) {
       <p className="result-count">{shown.length} recipe{shown.length === 1 ? '' : 's'}{anyActive ? <> · <a href="#" onClick={(e) => { e.preventDefault(); clearAll(); }}>clear search &amp; filters</a></> : null}</p>
       {shown.length ? (
         <div className="recipe-grid">
-          {shown.map((r) => <RecipeCardEl key={r.recipeId} recipe={r} onOpen={onOpenRecipe} />)}
+          {shown.map((r) => <RecipeCardEl key={r.recipeId} recipe={r} onOpen={onOpenRecipe} onDelete={confirmDel} />)}
         </div>
       ) : (
         <div className="empty-state"><p>No recipes match “{q}”{quick || activeCount ? ' with those filters' : ''}.</p><button className="btn btn-ghost" onClick={clearAll}>Clear search &amp; filters</button></div>
@@ -279,7 +281,7 @@ function RecipesScreen({ recipes, onOpenRecipe, onNewRecipe }) {
 }
 
 /* ------------------------------ Recipe detail ---------------------- */
-function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngredients, onUpdateRecipe, onBack, onToast }) {
+function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngredients, onUpdateRecipe, onDeleteRecipe, onBack, onToast }) {
   const r = recipe;
   const [scale, setScale] = React.useState(r.servings || 1);
   /* Per-recipe measurement override, seeded from the global setting. */
@@ -379,7 +381,7 @@ function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngr
         <button className="btn btn-ghost" onClick={() => onToast('Added to meal plan')}>Add to plan</button>
         <button className="btn btn-ghost" onClick={() => onToast(r.ingredients.length + ' ingredients added to household shopping')}>＋ Shopping list</button>
         <button className="btn btn-ghost" onClick={() => window.print()}>Print / PDF</button>
-        <button className="btn btn-danger-ghost" onClick={() => onToast('Recipe deleted', 'error')}>Delete</button>
+        <button className="btn btn-danger-ghost" onClick={() => { if (window.confirm('Delete “' + r.title + '”? This cannot be undone.')) { onDeleteRecipe(r.recipeId); onBack(); } }}>Delete</button>
       </div>
 
       <div className="recipe-columns">

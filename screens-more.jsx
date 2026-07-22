@@ -17,8 +17,20 @@ const TRAY_CHIPS = [
 ];
 const VIEWS = ['day', 'week', 'fortnight', 'month'];
 
+function useNarrowScreen() {
+  const [n, setN] = React.useState(() => window.matchMedia('(max-width: 759px)').matches);
+  React.useEffect(() => {
+    const mq = window.matchMedia('(max-width: 759px)');
+    const fn = (e) => setN(e.matches);
+    mq.addEventListener('change', fn);
+    return () => mq.removeEventListener('change', fn);
+  }, []);
+  return n;
+}
+
 function PlannerScreen({ recipes, plans, setPlans, pantry, onAteMeal, onAddGroceries, onOpenRecipe, onToast }) {
   const [view, setView] = React.useState('week');
+  const narrow = useNarrowScreen();
   const [anchor, setAnchor] = React.useState(window.TODAY);
   const [trayChip, setTrayChip] = React.useState('');
   const [trayOpen, setTrayOpen] = React.useState(false);
@@ -219,6 +231,35 @@ function PlannerScreen({ recipes, plans, setPlans, pantry, onAteMeal, onAddGroce
               </section>
             ))}
             <DayNutrition date={anchor} />
+          </div>
+        ) : narrow ? (
+          /* Phone: week/fortnight as a stacked day agenda — no sideways
+             table. Tap a day heading for the full Day view. */
+          <div className="agenda">
+            {days.map((d) => {
+              const dayPlans = plans.filter((p) => p.date === d);
+              return (
+                <section key={d} className={'agenda-day' + (d === window.TODAY ? ' is-today' : '')}>
+                  <h2 className="agenda-head">
+                    <button className="day-head-btn" onClick={() => { setAnchor(d); setView('day'); }}>{niceDate(d, { weekday: 'long', month: 'short', day: 'numeric' })}</button>
+                    {dayPlans.length ? <small>{dayPlans.length} meal{dayPlans.length === 1 ? '' : 's'}</small> : null}
+                  </h2>
+                  {MEAL_ROWS.map((meal) => {
+                    const has = dayPlans.some((p) => p.mealType === meal);
+                    if (!has && !picked && !trayOpen) return null;  /* keep empty rows only while placing */
+                    return (
+                      <div key={meal} className="agenda-meal">
+                        <span className="agenda-meal-label">{meal}</span>
+                        <Slot date={d} meal={meal} />
+                      </div>
+                    );
+                  })}
+                  {!dayPlans.length && !picked && !trayOpen ? (
+                    <button className="btn btn-ghost btn-sm agenda-empty-add" onClick={() => setTrayOpen(true)}>＋ Plan this day</button>
+                  ) : null}
+                </section>
+              );
+            })}
           </div>
         ) : (
           <table className={'planner-grid' + (view === 'fortnight' ? ' planner-grid-fortnight' : '')}>
@@ -601,6 +642,7 @@ const SAMPLE_IMPORT = `{
 const IMPORT_METHODS = [
   { id: 'bulk', label: 'Bulk import' },
   { id: 'web', label: 'Web recipes' },
+  { id: 'backup', label: 'Backup' },
   { id: 'photo', label: 'Photo import' },
   { id: 'youtube', label: 'YouTube link' },
   { id: 'ai', label: 'AI import' },
@@ -985,7 +1027,37 @@ function AiImport({ onToast }) {
   );
 }
 
-function ImportScreen({ onToast, onImportRecipes }) {
+/* -------- Backup / restore: whole-account data as a JSON file ------ */
+function BackupRestore({ onToast, onBackup, onRestore }) {
+  const fileRef = React.useRef(null);
+  const [busy, setBusy] = React.useState(false);
+  function pickFile(e) {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    if (!window.confirm('Restore from “' + f.name + '”? This replaces ALL current data for this account — recipes, planner, pantry, shopping and settings.')) return;
+    setBusy(true);
+    f.text().then((txt) => { onRestore(JSON.parse(txt)); })
+      .catch((err) => { setBusy(false); onToast(err.message || 'Could not read that backup file', 'error'); });
+  }
+  return (
+    <div className="form-card" style={{ display: 'grid', gap: '1rem', maxWidth: '34rem' }}>
+      <div>
+        <h2 style={{ margin: '0 0 .3rem' }}>Back up</h2>
+        <p className="hint">Saves everything — recipes, meal plans, pantry, shopping lists, stores, settings — into one file on this device. Do it before app updates or when switching phones.</p>
+        <button className="btn btn-primary" onClick={onBackup}>Download backup file</button>
+      </div>
+      <div>
+        <h2 style={{ margin: '0 0 .3rem' }}>Restore</h2>
+        <p className="hint">Bring back a backup file. This replaces all of this account’s current data on this device — the app reloads when done.</p>
+        <button className="btn btn-ghost" disabled={busy} onClick={() => fileRef.current && fileRef.current.click()}>{busy ? 'Restoring…' : 'Choose backup file…'}</button>
+        <input ref={fileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={pickFile} />
+      </div>
+    </div>
+  );
+}
+
+function ImportScreen({ onToast, onImportRecipes, onBackup, onRestore }) {
   const [method, setMethod] = React.useState('bulk');
   const subtitles = {
     bulk: 'Read a whole digital cookbook or website, keep what fits your diet, amend the rest',
@@ -993,6 +1065,7 @@ function ImportScreen({ onToast, onImportRecipes }) {
     photo: 'Snap up to 3 pictures of a single recipe — read on-device',
     youtube: 'Turn a cooking video into a recipe',
     ai: 'Paste a structured update from your assistant',
+    backup: 'Download everything as a file, or bring a backup back',
   };
   return (
     <div>
@@ -1004,7 +1077,7 @@ function ImportScreen({ onToast, onImportRecipes }) {
           <button key={m.id} className={'seg-btn' + (method === m.id ? ' active' : '')} onClick={() => setMethod(m.id)}>{m.label}</button>
         ))}
       </div>
-      {method === 'bulk' ? <BulkImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'web' ? <WebImportScreen onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'photo' ? <PhotoImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'youtube' ? <YouTubeImport onToast={onToast} onImportRecipes={onImportRecipes} /> : <AiImport onToast={onToast} />}
+      {method === 'backup' ? <BackupRestore onToast={onToast} onBackup={onBackup} onRestore={onRestore} /> : method === 'bulk' ? <BulkImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'web' ? <WebImportScreen onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'photo' ? <PhotoImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'youtube' ? <YouTubeImport onToast={onToast} onImportRecipes={onImportRecipes} /> : <AiImport onToast={onToast} />}
     </div>
   );
 }
