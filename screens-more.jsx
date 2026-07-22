@@ -733,8 +733,7 @@ function WebImportScreen({ onToast, onImportRecipes }) {
     setQueue(list.map((u) => ({ url: u, status: 'fetching' })));
     await Promise.all(list.map(async (u, i) => {
       try {
-        const html = await window.WebImport.fetchTextCors(u);
-        const drafts = window.WebImport.extractWebRecipes(html, u);
+        const drafts = await window.WebImport.fetchRecipesFromUrl(u);
         if (!drafts.length) throw new Error('No recipe found on that page');
         setQueue((q) => q.map((it, k) => (k === i ? { ...it, status: 'ready', draft: drafts[0] } : it)));
       } catch (e) {
