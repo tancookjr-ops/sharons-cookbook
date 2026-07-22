@@ -600,6 +600,7 @@ const SAMPLE_IMPORT = `{
 
 const IMPORT_METHODS = [
   { id: 'bulk', label: 'Bulk import' },
+  { id: 'web', label: 'Web recipes' },
   { id: 'photo', label: 'Photo import' },
   { id: 'youtube', label: 'YouTube link' },
   { id: 'ai', label: 'AI import' },
@@ -612,48 +613,63 @@ const DIET_CRITERIA = [
 ];
 /* Demo scan results: each found recipe lists ingredients that clash with
    a criterion, and the substitute (null = no good alternative). */
-const BULK_SAMPLE = [
-  { title: 'Summer Ratatouille', source: 'p. 112', issues: [] },
-  { title: 'Maple Walnut Scones', source: 'p. 38', issues: [
-    { ing: 'butter', crit: ['vegan'], sub: 'vegan butter' },
-    { ing: 'egg', crit: ['vegan', 'egg-free'], sub: 'flax egg' },
-    { ing: 'wheat flour', crit: ['wheat-free'], sub: 'GF flour blend' } ] },
-  { title: 'Honey Garlic Tofu', source: 'p. 74', issues: [
-    { ing: 'honey', crit: ['vegan'], sub: 'maple syrup' },
-    { ing: 'soy sauce', crit: ['soy-free'], sub: 'coconut aminos' },
-    { ing: 'tofu', crit: ['soy-free'], sub: null } ] },
-  { title: 'Lemon Chickpea Pancakes', source: 'p. 22', issues: [
-    { ing: 'egg', crit: ['vegan', 'egg-free'], sub: 'chickpea-flour batter' } ] },
-  { title: 'Classic Beef Bourguignon', source: 'p. 141', issues: [
-    { ing: 'beef', crit: ['vegan'], sub: null },
-    { ing: 'wheat flour', crit: ['wheat-free'], sub: 'GF flour blend' } ] },
-];
 
-function BulkImport({ onToast }) {
+function BulkImport({ onToast, onImportRecipes }) {
   const [source, setSource] = React.useState('');
-  const [crit, setCrit] = React.useState({ vegan: true, 'soy-free': false, 'wheat-free': false, 'egg-free': false });
-  const [amend, setAmend] = React.useState(true);
-  const [scanned, setScanned] = React.useState(false);
+  const [file, setFile] = React.useState(null);
+  const fileRef = React.useRef(null);
+  const [crit, setCrit] = React.useState({ vegan: false, 'soy-free': false, 'wheat-free': false, 'egg-free': false });
+  const [amend, setAmend] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [drafts, setDrafts] = React.useState(null);   /* parsed recipe drafts, or null */
+  const [warning, setWarning] = React.useState('');
 
-  const results = BULK_SAMPLE.map((r) => {
-    const hits = r.issues.filter((i) => i.crit.some((c) => crit[c]));
-    const fixable = hits.filter((i) => i.sub);
-    const blocked = hits.filter((i) => !i.sub);
-    let status = 'ok';
-    if (blocked.length) status = 'skip';
-    else if (hits.length && amend) status = 'amend';
-    else if (hits.length) status = 'skip';
-    return { ...r, status, fixable, blocked, hits };
-  });
+  async function scan() {
+    const src = file || source.trim();
+    if (!src) { onToast('Add a file or URL first', 'error'); return; }
+    setBusy(true); setDrafts(null); setWarning('');
+    try {
+      const { text, warning: w } = await window.parseCookbookSource(src);
+      const found = window.extractRecipes(text);
+      if (!found.length) {
+        setWarning('Read ' + Math.round(text.length / 1000) + 'k characters but couldn’t find recipe-shaped content (a title followed by measured ingredients). If this is a scanned/image PDF there’s no text to read.');
+      } else if (w) setWarning(w);
+      setDrafts(found);
+    } catch (e) {
+      onToast(e.message || 'Could not read that source', 'error');
+      setDrafts(null);
+    }
+    setBusy(false);
+  }
+
+  const results = (drafts || []).map((d) => ({ ...d, ...window.analyzeDraft(d, crit, amend) }));
   const importable = results.filter((r) => r.status !== 'skip');
+
+  function doImport() {
+    onImportRecipes(importable.map((r) => ({
+      recipeId: 'imp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      title: r.title, subtitle: 'Imported from ' + (file ? file.name : source),
+      category: 'Imported', cuisine: 'Other', mealType: 'Dinner', difficulty: 'Easy',
+      prepMinutes: 0, cookMinutes: 0, totalMinutes: 0, servings: 4,
+      tags: ['imported'].concat(r.status === 'amend' ? ['amended'] : []),
+      ingredients: r.ingredients,
+      instructions: r.steps.map((s) => ({ instruction: s })),
+      nutrition: { calories: 0, protein: 0, fat: 0, carbs: 0, fibre: 0, sugar: 0 },
+    })));
+    setDrafts(null); setFile(null); setSource('');
+  }
 
   return (
     <div>
       <div className="form-card">
         <label>Cookbook file or website URL
           <div className="import-source-row">
-            <input className="input" placeholder="https://… or drop an EPUB / PDF" value={source} onChange={(e) => { setSource(e.target.value); setScanned(false); }} />
-            <button className="btn btn-ghost" onClick={() => { setSource('the-green-kitchen.epub'); setScanned(false); }}>Choose file…</button>
+            <input className="input" placeholder="https://… or drop an EPUB / PDF" value={file ? file.name : source} onChange={(e) => { setSource(e.target.value); setFile(null); setDrafts(null); }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) { setFile(f); setDrafts(null); } }} />
+            <input ref={fileRef} type="file" accept=".epub,.pdf,.html,.htm,.txt,.md" style={{ display: 'none' }}
+              onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) { setFile(f); setDrafts(null); } e.target.value = ''; }} />
+            <button className="btn btn-ghost" onClick={() => fileRef.current && fileRef.current.click()}>Choose file…</button>
           </div>
         </label>
         <div className="import-criteria">
@@ -667,22 +683,24 @@ function BulkImport({ onToast }) {
             <input type="checkbox" checked={amend} onChange={(e) => setAmend(e.target.checked)} />
             Amend recipes with alternative ingredients where possible
           </label>
+          <p className="hint" style={{ margin: 0 }}>Recipes import word-for-word. Nothing is substituted unless you pick a diet above and tick “amend” — substituted ingredients keep a “was: …” note.</p>
         </div>
         <div className="import-btns">
-          <button className="btn btn-primary" onClick={() => (source ? setScanned(true) : onToast('Add a file or URL first', 'error'))}>Scan source</button>
+          <button className="btn btn-primary" disabled={busy} onClick={scan}>{busy ? 'Reading…' : 'Scan source'}</button>
         </div>
+        {warning ? <p className="hint" style={{ color: 'var(--warn, #b98424)' }}>{warning}</p> : null}
       </div>
 
-      {scanned ? (
+      {drafts && drafts.length ? (
         <div className="import-preview">
           <h2>{results.length} recipes found · {importable.length} will import</h2>
           <ul className="import-plan">
-            {results.map((r) => (
-              <li key={r.title} className={'import-step ' + (r.status === 'ok' ? 'step-ok' : r.status === 'amend' ? 'step-conflict' : 'step-skip')}>
+            {results.map((r, idx) => (
+              <li key={idx} className={'import-step ' + (r.status === 'ok' ? 'step-ok' : r.status === 'amend' ? 'step-conflict' : 'step-skip')}>
                 <span className="chip chip-sm">{r.status === 'ok' ? 'OK' : r.status === 'amend' ? 'AMENDED' : 'SKIPPED'}</span>
-                <span className="import-step-desc">{r.title} <small>· {r.source}</small></span>
+                <span className="import-step-desc">{r.title} <small>· {r.ingredients.length} ingredients · {r.steps.length} steps</small></span>
                 <span className="import-step-msg">
-                  {r.status === 'ok' ? 'Already meets the selected criteria.'
+                  {r.status === 'ok' ? 'Meets the selected criteria.'
                     : r.status === 'amend' ? r.fixable.map((i) => i.ing + ' → ' + i.sub).join(' · ')
                     : r.blocked.length ? 'No good alternative for ' + r.blocked.map((i) => i.ing).join(', ') + '.'
                     : 'Needs amending — turn on “amend” to fix ' + r.fixable.map((i) => i.ing).join(', ') + '.'}
@@ -691,8 +709,84 @@ function BulkImport({ onToast }) {
             ))}
           </ul>
           <div className="import-btns">
-            <button className="btn btn-primary" onClick={() => { setScanned(false); onToast(importable.length + ' recipes imported from ' + (source || 'source')); }}>Import {importable.length} recipes</button>
-            <button className="btn btn-ghost" onClick={() => setScanned(false)}>Cancel</button>
+            <button className="btn btn-primary" disabled={!importable.length} onClick={doImport}>Import {importable.length} recipes</button>
+            <button className="btn btn-ghost" onClick={() => setDrafts(null)}>Cancel</button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/* -------- Web recipes: multiple URLs, imported word-for-word ------- */
+function WebImport({ onToast, onImportRecipes }) {
+  const [urls, setUrls] = React.useState('');
+  const [adapt, setAdapt] = React.useState(false);
+  const [crit, setCrit] = React.useState({ vegan: false, 'soy-free': false, 'wheat-free': false, 'egg-free': false });
+  const [queue, setQueue] = React.useState([]);
+  const [busy, setBusy] = React.useState(false);
+
+  async function fetchAll() {
+    const list = [...new Set(urls.split(/\s+/).map((s) => s.trim()).filter((s) => /^https?:\/\//i.test(s)))];
+    if (!list.length) { onToast('Paste at least one recipe link (starting with https://)', 'error'); return; }
+    setBusy(true);
+    setQueue(list.map((u) => ({ url: u, status: 'fetching' })));
+    await Promise.all(list.map(async (u, i) => {
+      try {
+        const html = await window.WebImport.fetchTextCors(u);
+        const drafts = window.WebImport.extractWebRecipes(html, u);
+        if (!drafts.length) throw new Error('No recipe found on that page');
+        setQueue((q) => q.map((it, k) => (k === i ? { ...it, status: 'ready', draft: drafts[0] } : it)));
+      } catch (e) {
+        setQueue((q) => q.map((it, k) => (k === i ? { ...it, status: 'error', error: e.message || 'Could not read that page' } : it)));
+      }
+    }));
+    setBusy(false);
+  }
+  const ready = queue.filter((q) => q.status === 'ready');
+  function doImport() {
+    onImportRecipes(ready.map((q) => window.WebImport.draftToRecipe(q.draft, { crit: adapt ? crit : null })));
+    setQueue([]); setUrls('');
+  }
+  return (
+    <div>
+      <div className="form-card">
+        <label>Recipe links — one per line
+          <textarea className="input import-textarea" rows="4" placeholder={'https://…/best-focaccia\nhttps://…/lentil-dal'} value={urls} onChange={(e) => setUrls(e.target.value)}></textarea>
+        </label>
+        <p className="hint">Each link becomes its own recipe. Ingredients, amounts, times and method are kept exactly as published — only the page's editorial writing is replaced with a one-line factual summary, and the recipe photo is linked for personal reference.</p>
+        <label className="import-amend">
+          <input type="checkbox" checked={adapt} onChange={(e) => setAdapt(e.target.checked)} />
+          Adapt ingredients to my dietary preferences (otherwise nothing is changed)
+        </label>
+        {adapt ? (
+          <div className="tray-chips" style={{ marginTop: '.4rem' }}>
+            {DIET_CRITERIA.map((c) => (
+              <button key={c.id} className={'filter-chip filter-chip-sm' + (crit[c.id] ? ' active' : '')} onClick={() => setCrit({ ...crit, [c.id]: !crit[c.id] })}>{c.label}</button>
+            ))}
+          </div>
+        ) : null}
+        <div className="import-btns">
+          <button className="btn btn-primary" disabled={busy} onClick={fetchAll}>{busy ? 'Fetching…' : 'Fetch recipes'}</button>
+        </div>
+      </div>
+
+      {queue.length ? (
+        <div className="import-preview">
+          <h2>{ready.length} of {queue.length} link{queue.length === 1 ? '' : 's'} ready</h2>
+          <ul className="import-plan">
+            {queue.map((q, i) => (
+              <li key={i} className={'import-step ' + (q.status === 'ready' ? 'step-ok' : q.status === 'error' ? 'step-skip' : 'step-conflict')}>
+                <span className="chip chip-sm">{q.status === 'ready' ? 'READY' : q.status === 'error' ? 'FAILED' : 'FETCHING'}</span>
+                <span className="import-step-desc">{q.draft ? q.draft.title : q.url}{q.draft ? <small> · {q.draft.host} · {q.draft.ingredients.length} ingredients · {q.draft.steps.length} steps{q.draft.exact ? '' : ' · read heuristically — review after import'}</small> : null}</span>
+                <span className="import-step-msg">{q.status === 'error' ? q.error : ''}</span>
+                <button className="icon-btn" aria-label="Remove from queue" title="Remove" onClick={() => setQueue(queue.filter((_, k) => k !== i))}>×</button>
+              </li>
+            ))}
+          </ul>
+          <div className="import-btns">
+            <button className="btn btn-primary" disabled={!ready.length || busy} onClick={doImport}>Import {ready.length} recipe{ready.length === 1 ? '' : 's'}</button>
+            <button className="btn btn-ghost" onClick={() => setQueue([])}>Clear queue</button>
           </div>
         </div>
       ) : null}
@@ -701,21 +795,43 @@ function BulkImport({ onToast }) {
 }
 
 const PHOTO_SLOTS = ['Title & ingredients', 'Method', 'Extra page (optional)'];
-function PhotoImport({ onToast }) {
+function PhotoImport({ onToast, onImportRecipes }) {
   const [photos, setPhotos] = React.useState([null, null, null]);
-  const [extracted, setExtracted] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [progress, setProgress] = React.useState(0);
+  const [text, setText] = React.useState(null);   /* OCR text, user-editable */
+  const [drafts, setDrafts] = React.useState(null);
   const count = photos.filter(Boolean).length;
 
   function setPhoto(i, file) {
     const next = photos.slice();
-    next[i] = file ? { name: file.name, url: URL.createObjectURL(file) } : null;
-    setPhotos(next);
-    setExtracted(false);
+    next[i] = file ? { name: file.name, url: URL.createObjectURL(file), file } : null;
+    setPhotos(next); setText(null); setDrafts(null);
+  }
+  async function readPhotos() {
+    if (!count) { onToast('Add at least one photo', 'error'); return; }
+    setBusy(true); setProgress(0); setText(null); setDrafts(null);
+    try {
+      const t = (await window.WebImport.ocrImages(photos.filter(Boolean).map((p) => p.file), setProgress)).trim();
+      setText(t);
+      const found = extractRecipes(t);
+      if (found.length) setDrafts(found);
+    } catch (e) { onToast(e.message || 'Could not read the photos', 'error'); }
+    setBusy(false);
+  }
+  function parseNow(t) {
+    const found = extractRecipes(t || '');
+    if (!found.length) { onToast('No measured ingredient lines found — tidy the text so each ingredient is on its own line', 'error'); return; }
+    setDrafts(found);
+  }
+  function doImport() {
+    onImportRecipes(drafts.map((d) => window.WebImport.draftToRecipe(d, { subtitle: 'Imported from photo' })));
+    setPhotos([null, null, null]); setText(null); setDrafts(null);
   }
   return (
     <div>
       <div className="form-card">
-        <p className="hint" style={{ marginTop: 0 }}>Up to 3 photos of one recipe — a cookbook page, a recipe card, a handwritten note.</p>
+        <p className="hint" style={{ marginTop: 0 }}>Up to 3 photos of one recipe — a cookbook page, a recipe card, a printed note. Text is read on this device; nothing is uploaded.</p>
         <div className="photo-slots">
           {PHOTO_SLOTS.map((label, i) => (
             <label key={i} className={'photo-slot' + (photos[i] ? ' filled' : '')}>
@@ -726,64 +842,109 @@ function PhotoImport({ onToast }) {
           ))}
         </div>
         <div className="import-btns">
-          <button className="btn btn-primary" onClick={() => (count ? setExtracted(true) : onToast('Add at least one photo', 'error'))}>Read recipe from {count || ''} photo{count === 1 ? '' : 's'}</button>
-          {count ? <button className="btn btn-ghost" onClick={() => { setPhotos([null, null, null]); setExtracted(false); }}>Clear photos</button> : null}
+          <button className="btn btn-primary" disabled={busy} onClick={readPhotos}>{busy ? 'Reading… ' + Math.round(progress * 100) + '%' : 'Read text from ' + (count || '') + ' photo' + (count === 1 ? '' : 's')}</button>
+          {count ? <button className="btn btn-ghost" disabled={busy} onClick={() => { setPhotos([null, null, null]); setText(null); setDrafts(null); }}>Clear photos</button> : null}
         </div>
+        {busy ? <div style={{ height: 6, borderRadius: 3, background: 'var(--border)', marginTop: '.6rem' }}><div style={{ height: '100%', borderRadius: 3, background: 'var(--primary)', width: (progress * 100) + '%', transition: 'width .2s' }}></div></div> : null}
       </div>
 
-      {extracted ? (
+      {text !== null ? (
         <div className="import-preview">
-          <h2>Recipe read from {count} photo{count === 1 ? '' : 's'}</h2>
-          <ul className="import-plan">
-            <li className="import-step step-ok"><span className="chip chip-sm">TITLE</span><span className="import-step-desc">Nan's Oatcakes</span><span className="import-step-msg">Confidence: high.</span></li>
-            <li className="import-step step-ok"><span className="chip chip-sm">INGREDIENTS</span><span className="import-step-desc">8 found</span><span className="import-step-msg">Rolled oats, flour, brown sugar, butter…</span></li>
-            <li className="import-step step-conflict"><span className="chip chip-sm">STEP 4</span><span className="import-step-desc">“Bake until done”</span><span className="import-step-msg">No time readable — added a 15 min guess to review.</span></li>
-            <li className="import-step step-ok"><span className="chip chip-sm">YIELD</span><span className="import-step-desc">24 oatcakes</span></li>
-          </ul>
+          <h2>Text read from the photo{count === 1 ? '' : 's'}</h2>
+          <p className="hint" style={{ marginTop: 0 }}>Fix any misread words below — the recipe imports word-for-word from this text.</p>
+          <textarea className="input import-textarea" rows="10" value={text} onChange={(e) => { setText(e.target.value); setDrafts(null); }} style={{ fontFamily: 'var(--font-mono)' }}></textarea>
           <div className="import-btns">
-            <button className="btn btn-primary" onClick={() => { setExtracted(false); setPhotos([null, null, null]); onToast('Nan’s Oatcakes saved to Recipes'); }}>Save recipe</button>
-            <button className="btn btn-ghost" onClick={() => setExtracted(false)}>Cancel</button>
+            <button className="btn btn-primary" onClick={() => parseNow(text)}>Find the recipe</button>
           </div>
+          {drafts && drafts.length ? (
+            <div>
+              <ul className="import-plan">
+                {drafts.map((d, i) => (
+                  <li key={i} className="import-step step-ok"><span className="chip chip-sm">FOUND</span><span className="import-step-desc">{d.title}</span><span className="import-step-msg">{d.ingredients.length} ingredients · {d.steps.length} steps.</span></li>
+                ))}
+              </ul>
+              <div className="import-btns">
+                <button className="btn btn-primary" onClick={doImport}>Save {drafts.length === 1 ? '“' + drafts[0].title + '”' : drafts.length + ' recipes'} to Recipes</button>
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>
   );
 }
 
-function YouTubeImport({ onToast }) {
+function YouTubeImport({ onToast, onImportRecipes }) {
   const [url, setUrl] = React.useState('');
-  const [fetched, setFetched] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [meta, setMeta] = React.useState(null);
+  const [desc, setDesc] = React.useState('');
+  const [descAuto, setDescAuto] = React.useState(false);
+  const [draft, setDraft] = React.useState(null);
+
+  async function fetchVideo() {
+    const vid = window.WebImport.ytVideoId(url);
+    if (!vid) { onToast('That doesn’t look like a YouTube link', 'error'); return; }
+    setBusy(true); setMeta(null); setDraft(null); setDesc(''); setDescAuto(false);
+    let m = { title: 'YouTube video', author: '', thumb: 'https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg' };
+    try { m = { ...m, ...(await window.WebImport.ytMetadata(url)) }; } catch (e) {}
+    setMeta({ ...m, vid });
+    try {
+      const d = await window.WebImport.ytDescription(vid);
+      if (d) {
+        setDesc(d); setDescAuto(true);
+        const found = extractRecipes(d);
+        if (found.length) setDraft(found[0]);
+      }
+    } catch (e) {}
+    setBusy(false);
+  }
+  function parseNow() {
+    const found = extractRecipes(desc || '');
+    if (!found.length) { onToast('No measured ingredient lines found — paste the recipe part of the description', 'error'); return; }
+    setDraft(found[0]);
+  }
+  function doImport() {
+    onImportRecipes([window.WebImport.draftToRecipe({ ...draft, title: draft.title === 'Untitled recipe' ? meta.title : draft.title, sourceUrl: url, image: meta.thumb }, { subtitle: 'From YouTube' + (meta.author ? ' · ' + meta.author : '') })]);
+    setUrl(''); setMeta(null); setDesc(''); setDraft(null);
+  }
   return (
     <div>
       <div className="form-card">
         <label>Video link
           <div className="import-source-row">
-            <input className="input" type="url" placeholder="https://youtube.com/watch?v=…" value={url} onChange={(e) => { setUrl(e.target.value); setFetched(false); }} />
-            <button className="btn btn-primary" onClick={() => (/youtu/.test(url) ? setFetched(true) : onToast('That doesn’t look like a YouTube link', 'error'))}>Fetch</button>
+            <input className="input" type="url" placeholder="https://youtube.com/watch?v=…" value={url} onChange={(e) => { setUrl(e.target.value); setMeta(null); setDraft(null); }} />
+            <button className="btn btn-primary" disabled={busy} onClick={fetchVideo}>{busy ? 'Fetching…' : 'Fetch'}</button>
           </div>
         </label>
-        <p className="hint">The recipe is read from the video description, chapters and captions.</p>
+        <p className="hint">The recipe is read from the video's description box — that's where cooking channels publish the ingredient list. If the description can't be fetched, paste it below.</p>
       </div>
 
-      {fetched ? (
+      {meta ? (
         <div className="import-preview">
-          <h2>Found a recipe in the video</h2>
           <div className="yt-card">
-            <div className="yt-thumb" aria-hidden="true">▶</div>
+            <img src={meta.thumb} alt="" style={{ width: '5.5rem', aspectRatio: '16/9', objectFit: 'cover', borderRadius: '6px' }} />
             <div>
-              <strong>One-Pan Harissa Chickpeas — 15 minute dinner</strong>
-              <small>Maritime Home Cooking · 9:42</small>
+              <strong>{meta.title}</strong>
+              {meta.author ? <small>{meta.author}</small> : null}
             </div>
           </div>
-          <ul className="import-plan">
-            <li className="import-step step-ok"><span className="chip chip-sm">INGREDIENTS</span><span className="import-step-desc">9 found</span><span className="import-step-msg">From the description box.</span></li>
-            <li className="import-step step-ok"><span className="chip chip-sm">STEPS</span><span className="import-step-desc">6 steps</span><span className="import-step-msg">From chapters + captions, with timestamps.</span></li>
-            <li className="import-step step-conflict"><span className="chip chip-sm">SERVINGS</span><span className="import-step-desc">Not stated</span><span className="import-step-msg">Defaulting to 4 — review after import.</span></li>
-          </ul>
+          <p className="hint" style={{ margin: '.6rem 0 .2rem' }}>{descAuto ? 'Description fetched — edit if needed:' : 'Paste the video description (or the recipe from a pinned comment):'}</p>
+          <textarea className="input import-textarea" rows="8" value={desc} onChange={(e) => { setDesc(e.target.value); setDraft(null); }} style={{ fontFamily: 'var(--font-mono)' }}></textarea>
           <div className="import-btns">
-            <button className="btn btn-primary" onClick={() => { setFetched(false); setUrl(''); onToast('Recipe imported from YouTube'); }}>Import recipe</button>
-            <button className="btn btn-ghost" onClick={() => setFetched(false)}>Cancel</button>
+            <button className="btn btn-primary" onClick={parseNow}>Find the recipe</button>
           </div>
+          {draft ? (
+            <div>
+              <ul className="import-plan">
+                <li className="import-step step-ok"><span className="chip chip-sm">FOUND</span><span className="import-step-desc">{draft.title === 'Untitled recipe' ? meta.title : draft.title}</span><span className="import-step-msg">{draft.ingredients.length} ingredients · {draft.steps.length} steps, word-for-word.</span></li>
+              </ul>
+              <div className="import-btns">
+                <button className="btn btn-primary" onClick={doImport}>Import recipe</button>
+                <button className="btn btn-ghost" onClick={() => setDraft(null)}>Cancel</button>
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -825,11 +986,12 @@ function AiImport({ onToast }) {
   );
 }
 
-function ImportScreen({ onToast }) {
+function ImportScreen({ onToast, onImportRecipes }) {
   const [method, setMethod] = React.useState('bulk');
   const subtitles = {
     bulk: 'Read a whole digital cookbook or website, keep what fits your diet, amend the rest',
-    photo: 'Snap up to 3 pictures of a single recipe',
+    web: 'Paste one or more recipe links — each becomes its own recipe, word-for-word',
+    photo: 'Snap up to 3 pictures of a single recipe — read on-device',
     youtube: 'Turn a cooking video into a recipe',
     ai: 'Paste a structured update from your assistant',
   };
@@ -843,13 +1005,13 @@ function ImportScreen({ onToast }) {
           <button key={m.id} className={'seg-btn' + (method === m.id ? ' active' : '')} onClick={() => setMethod(m.id)}>{m.label}</button>
         ))}
       </div>
-      {method === 'bulk' ? <BulkImport onToast={onToast} /> : method === 'photo' ? <PhotoImport onToast={onToast} /> : method === 'youtube' ? <YouTubeImport onToast={onToast} /> : <AiImport onToast={onToast} />}
+      {method === 'bulk' ? <BulkImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'web' ? <WebImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'photo' ? <PhotoImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'youtube' ? <YouTubeImport onToast={onToast} onImportRecipes={onImportRecipes} /> : <AiImport onToast={onToast} />}
     </div>
   );
 }
 
 /* ------------------------------ Settings --------------------------- */
-function SettingsScreen({ theme, onTheme, measure, onMeasure, stores, onStores, keepAwake, onKeepAwake, densities, onDensities, onErase, onToast }) {
+function SettingsScreen({ user, onSignOut, theme, onTheme, measure, onMeasure, stores, onStores, keepAwake, onKeepAwake, densities, onDensities, onErase, onToast }) {
   const [confirmErase, setConfirmErase] = React.useState(false);
   const [scale, setScale] = React.useState(1);
   const [newStore, setNewStore] = React.useState('');
@@ -866,6 +1028,13 @@ function SettingsScreen({ theme, onTheme, measure, onMeasure, stores, onStores, 
     <div>
       <header className="page-head"><h1>Settings</h1></header>
       <div className="settings-grid" style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
+        <fieldset className="form-card">
+          <legend>Account</legend>
+          <p style={{ margin: '0 0 .3rem' }}><strong>{user ? user.username : ''}</strong> <small style={{ color: 'var(--text-soft)' }}>· {user ? user.email : ''}</small></p>
+          <p className="hint" style={{ marginTop: 0 }}>Each account keeps its own recipes, pantry, plans and settings on this device.</p>
+          <button className="btn btn-ghost" onClick={onSignOut}>Sign out</button>
+        </fieldset>
+
         <fieldset className="form-card">
           <legend>Appearance</legend>
           <div className="seg">
@@ -962,7 +1131,7 @@ function SettingsScreen({ theme, onTheme, measure, onMeasure, stores, onStores, 
 
         <fieldset className="form-card danger-card" style={{ borderColor: 'color-mix(in srgb, var(--danger) 45%, var(--border))' }}>
           <legend style={{ color: 'var(--danger)' }}>Danger zone</legend>
-          <p className="hint">Local-only. No accounts, no network, no telemetry.</p>
+          <p className="hint">Erases only {user ? user.username : 'this account'}’s data on this device — other accounts are untouched.</p>
           {confirmErase ? (
             <div className="pantry-editor-actions">
               <button className="btn btn-danger-ghost" onClick={() => onErase()}>Yes — erase everything and restart</button>
@@ -977,4 +1146,63 @@ function SettingsScreen({ theme, onTheme, measure, onMeasure, stores, onStores, 
   );
 }
 
-Object.assign(window, { PlannerScreen, PantryScreen, ShoppingScreen, GardenScreen, ImportScreen, SettingsScreen });
+/* ------------------------------ Login ------------------------------ */
+function LoginScreen({ onLogin }) {
+  const [mode, setMode] = React.useState('signin');
+  const [id, setId] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [pw, setPw] = React.useState('');
+  const [pw2, setPw2] = React.useState('');
+  const [err, setErr] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  async function submit(e) {
+    e.preventDefault(); setErr(''); setBusy(true);
+    try {
+      if (mode === 'signin') {
+        const u = await window.CBAuth.verify(id, pw);
+        if (!u) throw new Error('Wrong name/email or password');
+        onLogin(u);
+      } else {
+        if (pw !== pw2) throw new Error('Passwords don’t match');
+        onLogin(await window.CBAuth.create(id, email, pw));
+      }
+    } catch (ex) { setErr(ex.message || 'Something went wrong'); }
+    setBusy(false);
+  }
+  return (
+    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '1.5rem' }}>
+      <form className="form-card" style={{ width: 'min(92vw, 24rem)' }} onSubmit={submit}>
+        <div style={{ textAlign: 'center', marginBottom: '.75rem' }}>
+          {typeof BrandMark !== 'undefined' ? <BrandMark size={44} /> : null}
+          <h1 style={{ margin: '.4rem 0 .1rem' }}>myCookbook</h1>
+          <p className="hint" style={{ margin: 0 }}>Recipes, planning and pantry — all on this device.</p>
+        </div>
+        <div className="seg" style={{ marginBottom: '.9rem' }}>
+          <button type="button" className={'seg-btn' + (mode === 'signin' ? ' active' : '')} onClick={() => { setMode('signin'); setErr(''); }}>Sign in</button>
+          <button type="button" className={'seg-btn' + (mode === 'create' ? ' active' : '')} onClick={() => { setMode('create'); setErr(''); }}>Create account</button>
+        </div>
+        <label>{mode === 'signin' ? 'Name or email' : 'Your name'}
+          <input className="input" value={id} autoFocus autoCapitalize="none" onChange={(e) => setId(e.target.value)} placeholder={mode === 'signin' ? 'Name or you@example.com' : 'Shown as “…’s Cookbook”'} />
+        </label>
+        {mode === 'create' ? (
+          <label>Email
+            <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+          </label>
+        ) : null}
+        <label>Password
+          <input className="input" type="password" value={pw} onChange={(e) => setPw(e.target.value)} />
+        </label>
+        {mode === 'create' ? (
+          <label>Password again
+            <input className="input" type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} />
+          </label>
+        ) : null}
+        {err ? <p className="hint" style={{ color: 'var(--danger)' }}>{err}</p> : null}
+        <button className="btn btn-primary" disabled={busy} style={{ width: '100%', marginTop: '.6rem' }}>{busy ? 'One moment…' : mode === 'signin' ? 'Open my cookbook' : 'Create my cookbook'}</button>
+        {mode === 'create' ? <p className="hint">New cookbooks start with 25 staples — 5 each of breakfasts, lunches, dinners, desserts and snacks.</p> : null}
+      </form>
+    </div>
+  );
+}
+
+Object.assign(window, { PlannerScreen, PantryScreen, ShoppingScreen, GardenScreen, ImportScreen, SettingsScreen, LoginScreen });
