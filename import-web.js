@@ -123,6 +123,7 @@ function ldToDraft(r, url) {
     category: ldStr(r.recipeCategory),
     cuisine: ldStr(r.recipeCuisine),
     calories: ldNum(n.calories),
+    servingSize: ldStr(n.servingSize),
     nutrition: { calories: ldNum(n.calories), protein: ldNum(n.proteinContent), fat: ldNum(n.fatContent), carbs: ldNum(n.carbohydrateContent), fibre: ldNum(n.fiberContent), sugar: ldNum(n.sugarContent) },
     sourceUrl: url, host,
     exact: true,   /* structured source — ingredients/steps are verbatim */
@@ -162,15 +163,19 @@ function readerToDrafts(md, url) {
   let title = h1 ? h1.replace(/^#+\s*/, '') : (tM ? clean(tM[1]).split(/\s+[|–—]\s+|\s+-\s+/)[0].trim() : '');
   const ingStart = /^#{0,6}\s*ingredients\b/i;
   const stepStart = /^#{0,6}\s*(instructions|directions|method|steps|preparation|how to (?:make|prepare))\b/i;
-  const sectionEnd = /^#{0,6}\s*(notes|nutrition(?:al)? (?:facts|information)|nutrition\b|equipment|video|faq|storage|tips|serving suggestions|related|comments|leave a reply|you may also|more recipes|did you make)\b/i;
+  const sectionEnd = /^#{0,6}\s*(nutrition(?:al)? (?:facts|information)|nutrition\b|equipment|video|serving suggestions|related|comments|leave a reply|you may also|more recipes|did you make|rate this)\b/i;
+  const noteHead = /^#{0,6}\s*(?:recipe )?(notes?|pro tips?|tips?(?: (?:&|and) tricks)?|expert tips?|storage|how to store|leftovers?|make[- ]ahead|freez(?:e|ing)|substitutions?|variations?|alternate (?:methods?|versions?)|no[- ]churn|faqs?|frequently asked questions|troubleshooting)\b/i;
   const junk = /^(us customary|metric|[123]x\b|cook mode|prevent your screen|pin\b|print\b|rate\b|save\b|jump to|scale\b|share\b|tweet\b|email\b|facebook|pinterest|instagram|advertisement)/i;
-  const ings = [], steps = [];
-  let mode = '';
+  const ings = [], steps = [], noteBuckets = [];
+  let mode = '', curNote = null;
   for (let l of lines) {
     if (!l) continue;
     if (ingStart.test(l)) { mode = 'ing'; continue; }
     if (stepStart.test(l)) { mode = 'step'; continue; }
+    const nh = l.match(noteHead);
+    if (nh && (/^#{1,6}\s/.test(l) || /:$/.test(l) || l.length <= 40)) { mode = 'note'; curNote = { t: l.replace(/^#+\s*/, '').replace(/:$/, '').trim(), lines: [] }; noteBuckets.push(curNote); continue; }
     if (sectionEnd.test(l)) { mode = ''; continue; }
+    if (mode === 'note' && /^#{1,6}\s+/.test(l)) { mode = ''; continue; }
     if (!mode || junk.test(l)) continue;
     if (!title && /^#{1,3}\s+/.test(l)) { title = l.replace(/^#+\s*/, ''); continue; }
     const isBullet = /^(?:[-*•▢□☐]|\d+[.)])\s+/.test(l);
@@ -187,16 +192,40 @@ function readerToDrafts(md, url) {
          belongs to the previous step — never split one instruction */
       if (!isBullet && steps.length && (!/[.!?]$/.test(steps[steps.length - 1]) || /^[a-z(&]/.test(l))) { steps[steps.length - 1] += ' ' + l; continue; }
       if (isBullet || l.length > 15) steps.push(l);
+    } else if (mode === 'note') {
+      if (curNote && curNote.lines.length < 4 && l.length > 8) curNote.lines.push(l);
     }
   }
   if (ings.length < 2 || steps.length < 2) return [];
   const flat = lines.join('\n');
   const grab = (re) => { const m = flat.match(re); return m ? m[1].trim() : ''; };
   const num = (re) => { const m = flat.match(re); return m ? Number(m[1]) : 0; };
-  const prep = textMinutes(grab(/prep(?:aration)?\s*time\W{0,3}([^\n|]{1,40})/i));
-  let cook = textMinutes(grab(/cook(?:ing)?\s*time\W{0,3}([^\n|]{1,40})/i));
+  const prep = textMinutes(grab(/prep(?:aration)?\s*time\W{0,3}([^\n|]{1,40})/i)) || textMinutes(grab(/\bprep\W{0,3}(\d[^\n|]{0,20})/i));
+  let cook = textMinutes(grab(/cook(?:ing)?\s*time\W{0,3}([^\n|]{1,40})/i)) || textMinutes(grab(/\bcook\W{0,3}(\d[^\n|]{0,20})/i));
+  const extra = textMinutes(grab(/(?:additional|chill(?:ing)?|rest(?:ing)?|freez(?:e|ing)|churn(?:ing)?|inactive)\s*time\W{0,3}([^\n|]{1,40})/i));
+  if (extra) cook += extra;
   const total = textMinutes(grab(/total\s*time\W{0,3}([^\n|]{1,40})/i));
   if (!cook && total > prep) cook = total - prep;
+  const yieldTxt = grab(/^yields?\W{0,3}([^\n|]{1,40})/im);
+  const WNUM = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
+  let servings = num(/(?:servings|serves)\W{0,3}(\d+)/i);
+  if (!servings) { const w = grab(/(?:servings|serves)\W{0,3}(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\b/i); servings = WNUM[w.toLowerCase()] || 0; }
+  if (!servings) { const ym = yieldTxt.match(/\d+/); servings = ym ? Number(ym[0]) : 0; }
+  const servingSize = grab(/serving size\W{0,3}([^\n|]{1,40})/i);
+  /* one-paragraph digest of the page's non-recipe info (storage, tips,
+     variations, FAQ) — first sentences only, never the full prose */
+  const notes = noteBuckets.filter((b) => b.lines.length).map((b) => {
+    const txt = b.lines.join(' ').replace(/\s+/g, ' ');
+    const sents = (txt.match(/[^.!?]+[.!?]?/g) || [txt]).slice(0, 2).join('').trim();
+    return b.t + ': ' + (sents.length > 220 ? sents.slice(0, 217) + '\u2026' : sents);
+  }).join('\n').slice(0, 900);
+  /* first content image on the page = the dish photo */
+  let image = '';
+  for (const im of (md.match(/!\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g) || [])) {
+    const u = (im.match(/\((https?:\/\/[^)\s]+)\)/) || [])[1] || '';
+    if (/logo|icon|avatar|gravatar|badge|banner|button|\.svg|\.gif/i.test(u)) continue;
+    image = u; break;
+  }
   const nutrition = {
     calories: num(/calories\W{0,3}(\d+)/i), protein: num(/protein\W{0,3}(\d+(?:\.\d+)?)/i),
     fat: num(/(?:^|[^a-z])fat\W{0,3}(\d+(?:\.\d+)?)/i), carbs: num(/carb(?:ohydrate)?s?\W{0,3}(\d+(?:\.\d+)?)/i),
@@ -204,8 +233,8 @@ function readerToDrafts(md, url) {
   };
   return [{
     title: title || 'Untitled recipe', ingredients: ings, steps,
-    servings: num(/(?:servings|serves)\W{0,3}(\d+)/i) || 0, yield: grab(/^yields?\W{0,3}([^\n|]{1,40})/im),
-    prepMinutes: prep, cookMinutes: cook, image: '',
+    servings, yield: yieldTxt, servingSize, notes,
+    prepMinutes: prep, cookMinutes: cook, image,
     category: grab(/course\W{0,3}([a-z &,-]{3,30})/i), cuisine: grab(/cuisine\W{0,3}([a-z &,-]{3,30})/i),
     calories: nutrition.calories, nutrition, sourceUrl: url, host,
     exact: true, /* lines are verbatim from the page's recipe card */
@@ -234,9 +263,11 @@ function extractWebRecipes(html, url) {
     let j; try { j = JSON.parse(s.textContent); } catch (e) { return; }
     collectLdRecipes(j).forEach((r) => { const d = ldToDraft(r, url); if (d.ingredients.length) out.push(d); });
   });
-  if (out.length) return out;
+  const og = doc.querySelector('meta[property="og:image"], meta[name="og:image"]');
+  const ogImg = og ? (og.getAttribute('content') || '') : '';
+  if (out.length) { out.forEach((d) => { if (!d.image) d.image = ogImg; }); return out; }
   const micro = microdataDraft(doc, url);
-  if (micro) return [micro];
+  if (micro) { micro.image = micro.image || ogImg; return [micro]; }
   /* last resort: heuristic scan of the page text */
   return textToDrafts(window.htmlToText(html), url);
 }
@@ -310,7 +341,7 @@ function draftToRecipe(d, opts) {
     mealType: meal, difficulty: 'Easy',
     prepMinutes: d.prepMinutes || 0, cookMinutes: d.cookMinutes || 0,
     totalMinutes: (d.prepMinutes || 0) + (d.cookMinutes || 0),
-    servings: d.servings || 4, tags,
+    servings: d.servings || 4, servingSize: d.servingSize || '', notes: d.notes || '', tags,
     sourceUrl: d.sourceUrl || '', image: d.image || '',
     ingredients: ings,
     instructions: d.steps.map((s) => ({ instruction: s })),
