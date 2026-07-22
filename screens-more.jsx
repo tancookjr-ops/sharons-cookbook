@@ -719,7 +719,7 @@ function BulkImport({ onToast, onImportRecipes }) {
 }
 
 /* -------- Web recipes: multiple URLs, imported word-for-word ------- */
-function WebImport({ onToast, onImportRecipes }) {
+function WebImportScreen({ onToast, onImportRecipes }) {
   const [urls, setUrls] = React.useState('');
   const [adapt, setAdapt] = React.useState(false);
   const [crit, setCrit] = React.useState({ vegan: false, 'soy-free': false, 'wheat-free': false, 'egg-free': false });
@@ -1005,7 +1005,7 @@ function ImportScreen({ onToast, onImportRecipes }) {
           <button key={m.id} className={'seg-btn' + (method === m.id ? ' active' : '')} onClick={() => setMethod(m.id)}>{m.label}</button>
         ))}
       </div>
-      {method === 'bulk' ? <BulkImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'web' ? <WebImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'photo' ? <PhotoImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'youtube' ? <YouTubeImport onToast={onToast} onImportRecipes={onImportRecipes} /> : <AiImport onToast={onToast} />}
+      {method === 'bulk' ? <BulkImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'web' ? <WebImportScreen onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'photo' ? <PhotoImport onToast={onToast} onImportRecipes={onImportRecipes} /> : method === 'youtube' ? <YouTubeImport onToast={onToast} onImportRecipes={onImportRecipes} /> : <AiImport onToast={onToast} />}
     </div>
   );
 }
