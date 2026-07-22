@@ -354,7 +354,7 @@ function RecipeDetailScreen({ recipe, pantry, measure, onToggleFav, onUpdateIngr
           <label className="span-2">Description <textarea className="input" rows="2" value={meta.description} onChange={(e) => setMeta({ ...meta, description: e.target.value })}></textarea></label>
           <label>Category <input className="input" value={meta.category} onChange={(e) => setMeta({ ...meta, category: e.target.value })} /></label>
           <label>Cuisine <input className="input" value={meta.cuisine} onChange={(e) => setMeta({ ...meta, cuisine: e.target.value })} /></label>
-          <label>Meal <select className="input" value={meta.mealType} onChange={(e) => setMeta({ ...meta, mealType: e.target.value })}>{['Breakfast', 'Lunch', 'Dinner', 'Snack'].map((x) => <option key={x}>{x}</option>)}</select></label>
+          <label>Meal <select className="input" value={meta.mealType} onChange={(e) => setMeta({ ...meta, mealType: e.target.value })}>{['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack'].map((x) => <option key={x}>{x}</option>)}</select></label>
           <label>Difficulty <select className="input" value={meta.difficulty} onChange={(e) => setMeta({ ...meta, difficulty: e.target.value })}>{['Easy', 'Medium', 'Involved'].map((x) => <option key={x}>{x}</option>)}</select></label>
           <label>Prep (min) <input className="input" type="number" min="0" value={meta.prepMinutes} onChange={(e) => setMeta({ ...meta, prepMinutes: e.target.value })} /></label>
           <label>Cook (min) <input className="input" type="number" min="0" value={meta.cookMinutes} onChange={(e) => setMeta({ ...meta, cookMinutes: e.target.value })} /></label>
