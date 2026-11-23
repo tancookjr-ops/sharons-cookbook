@@ -1,0 +1,51 @@
+// Phase 1.4–1.5 · INVENTORY.md + MOVE-PREFLIGHT.md, derived from INVENTORY.json
+const P=await loadP();const inv=await loadInv();const st=await rdJSON(OUT+'/_work/walk.json')||{dirs:null};
+const sum=a=>a.reduce((s,r)=>s+r.bytes,0);
+const by={};for(const r of inv)(by[r.class]=by[r.class]||[]).push(r);
+const sec=inv.filter(r=>r.secret);const big=inv.slice().sort((a,b)=>b.bytes-a.bytes).slice(0,20);
+const row=r=>`- \`${r.path}\` — ${fmt(r.bytes)}`;
+const md=`# INVENTORY — ${P.name} · ${P.date}
+
+Derived from \`${OUT}/INVENTORY.json\` by \`${KIT}/scripts/11-inventory-report\`. Do not hand-edit.
+
+${DL(P.closes)}
+
+**${inv.length} files · ${st.dirs??'?'} folders · ${fmt(sum(inv))}** (excludes \`${OUT}/\`).
+
+## By class
+| Class | Files | Size |
+|---|---|---|
+${Object.keys(by).sort().map(k=>`| ${k} | ${by[k].length} | ${fmt(sum(by[k]))} |`).join('\n')}
+
+## Secret-risk (${sec.length}) — path, rule and the text BEFORE the match; values are never copied
+${sec.length?sec.map(r=>`- \`${r.path}\` — ${r.secret}${r.secretCtx?` — “${r.secretCtx.replace(/`/g,"'")}”`:''}`).join('\n'):'None.'}
+
+## Largest 20
+${big.map(row).join('\n')}
+`;
+await saveFile(OUT+'/INVENTORY.md',md);
+const OKX=new Set(['html','htm','css','js','jsx','tsx','ts','json','md','txt','svg','png','jpg','jpeg','gif','webp','woff','woff2','pdf']);
+const over=inv.filter(r=>r.bytes>5*1048576),badName=inv.filter(r=>!/^[A-Za-z0-9 ._()\/-]+$/.test(r.path)),badExt=inv.filter(r=>!OKX.has(r.ext)),zero=inv.filter(r=>r.bytes===0),fffd=inv.filter(r=>r.fffd);
+const g={};for(const r of inv)if(r.sha){const k=r.bytes+':'+r.sha;(g[k]=g[k]||[]).push(r);}
+const dups=Object.values(g).filter(a=>a.length>1);
+const list=(t,a,f)=>`## ${t} (${a.length})\n${a.length?a.map(f||row).join('\n'):'None.'}\n`;
+const pf=`# MOVE PRE-FLIGHT — ${P.name} · ${P.date}
+
+Derived from \`INVENTORY.json\`. **Nothing here was deleted or renamed.** Act on a row ONLY if the official
+"Check whether this design system can move to Claude" names that file.
+
+${DL(P.closes)}
+
+${list('Over 5 MB',over)}
+${list('Largest 20 overall',big)}
+${list('Names with unusual characters (rename candidates)',badName,r=>'- `'+r.path+'`')}
+${list('Extensions outside the common set (convert/remove candidates)',badExt,r=>'- `'+r.path+'`')}
+${list('Zero-byte files (contents missing)',zero,r=>'- `'+r.path+'`')}
+${list('Text with unreadable characters (U+FFFD)',fffd,r=>'- `'+r.path+'`')}
+## Duplicate groups in uploads/ (${dups.length}; same size and same SHA-1)
+${dups.length?dups.map((a,i)=>`${i+1}. ${fmt(a[0].bytes)} — ${a.map(r=>'`'+r.path+'`').join(' · ')}`).join('\n'):'None.'}
+`;
+await saveFile(OUT+'/MOVE-PREFLIGHT.md',pf);
+log(`G1 numbers: files ${inv.length} + folders ${st.dirs} = ${inv.length+(st.dirs||0)} · bytes ${fmt(sum(inv))}`);
+log(`secret-risk ${sec.length} — review each in INVENTORY.md; clear only prose/regex/placeholder hits`);
+log(`preflight: >5MB ${over.length} · odd names ${badName.length} · odd ext ${badExt.length} · zero ${zero.length} · U+FFFD ${fffd.length} · dup groups ${dups.length}`);

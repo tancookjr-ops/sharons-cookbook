@@ -1,0 +1,76 @@
+/* copy-all.js — tap-anywhere-to-select-all payload fields for copy docs.
+   Load once per doc, after the payload markup:  <script src="copy-all.js"></script>
+
+   Enhances every <textarea readonly> in the page: tapping (or focusing) one
+   selects the whole payload, so ⌘C / long-press → Copy finishes the job.
+   Clipboard WRITES are permission-denied in the preview frame — selection
+   APIs are not — so this never claims to have copied anything.
+
+   Progressive by design: if this file fails to load, the payload is still
+   visible in a real textarea and still selectable by hand. */
+(function () {
+  var SEL = 'textarea[readonly]';
+  var CSS =
+    'textarea[readonly]{width:100%;box-sizing:border-box;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;background:#f7f5ef;color:#111;border:1px solid #cfc8b8;border-radius:4px;padding:.5em;cursor:pointer;-webkit-text-size-adjust:100%}' +
+    'textarea[readonly]:focus{outline:none;border-color:var(--copy-accent,#555);box-shadow:0 0 0 2px color-mix(in srgb,var(--copy-accent,#555) 18%,transparent)}' +
+    '.copy-all-hint{margin:.3em 0 1.1em;font:12px/1.4 system-ui,sans-serif;color:#555}' +
+    '.copy-all-hint b{color:var(--copy-accent,#555)}';
+
+  function styles() {
+    if (document.getElementById('copy-all-css')) return;
+    var s = document.createElement('style');
+    s.id = 'copy-all-css';
+    s.textContent = CSS;
+    document.head.appendChild(s);
+  }
+
+  function chars(t) {
+    return t.value.length.toLocaleString('en-CA') + ' characters';
+  }
+
+  function enhance(t) {
+    if (t.dataset.copyAll === 'on') return;
+    t.dataset.copyAll = 'on';
+    t.setAttribute('spellcheck', 'false');
+    t.setAttribute('autocapitalize', 'off');
+    t.setAttribute('autocorrect', 'off');
+    var hint = document.createElement('p');
+    hint.className = 'copy-all-hint';
+    hint.textContent = 'Tap the field to select all \u00b7 ' + chars(t);
+    t.insertAdjacentElement('afterend', hint);
+    t._copyAllHint = hint;
+  }
+
+  function selectAll(t) {
+    try {
+      t.focus({ preventScroll: true });
+      t.setSelectionRange(0, t.value.length);
+    } catch (e) {
+      try { t.select(); } catch (e2) { return; }
+    }
+    var hint = t._copyAllHint;
+    if (hint) {
+      hint.innerHTML = '<b>Selected</b> \u2014 press \u2318C, or long-press \u2192 Copy \u00b7 ' + chars(t);
+    }
+  }
+
+  function onEvent(ev) {
+    var t = ev.target;
+    if (!t || !t.matches || !t.matches(SEL)) return;
+    selectAll(t);
+  }
+
+  function init() {
+    styles();
+    var all = document.querySelectorAll(SEL);
+    for (var i = 0; i < all.length; i++) enhance(all[i]);
+  }
+
+  document.addEventListener('click', onEvent, true);
+  document.addEventListener('focusin', onEvent, true);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

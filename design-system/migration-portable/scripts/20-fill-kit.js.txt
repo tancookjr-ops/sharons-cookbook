@@ -1,0 +1,25 @@
+// Phases 2 · 4.1 · 5.1 · copy kit/ into <OUT>/ with this project's values filled. G5 + no-placeholder gate.
+const P=await loadP();const AI=P.target!=='code',CODE=P.target!=='ai';
+const [owner,rname]=(P.repo||'/').split('/');
+const V={NAME:P.name,SHORT:P.short,SLUG:P.slug,NS:P.ns||'(no component bundle)',COMPONENTS:P.components.length?P.components.join(', '):'(none)',
+ REPO:P.repo||'',REPO_OWNER:owner||'',REPO_NAME:rname||'',BRANCH:P.branch||'',REPO_PATH_NOTE:P.repoPath?`, app folder \`${P.repoPath}/\``:'',
+ DS_FOLDER:P.dsFolder,INVARIANTS:P.invariants||'(No invariants section was found in CLAUDE.md or readme.md. Ask the owner for the brand rules before designing anything.)',
+ INVARIANTS_SOURCE:P.invariantsSource,STARTER:P.starter,CLOSES:P.closes,DATE:P.date,ACCENT:P.accent,OUT,CLOSE_PHRASE:P.closePhrase,CLOSE_PASS:P.closePass};
+const F={repo:!!P.repo,norepo:!P.repo,ds:P.isDS,nods:!P.isDS,state:P.has.state,nostate:!P.has.state,ledger:P.has.ledger,jobs:P.has.jobs,threads:P.has.threads,map:P.has.map,claude:P.has.claude,verbs:P.has.verbs};
+const fill=s=>{let o=s;for(let i=0;i<4;i++)o=o.replace(/<!--if:(\w+)-->([\s\S]*?)<!--\/if:\1-->/g,(m,k,body)=>F[k]?body:'');
+ o=o.replace(/\{\{(\w+)\}\}/g,(m,k)=>k in V?V[k]:m);return o.replace(/\n{3,}/g,'\n\n');};
+const files=[['START-HERE.md'],['chats/CHAT-CAPTURE.md']];
+if(AI)files.push(['claude-ai/PROJECT-INSTRUCTIONS.md'],['claude-ai/ARTIFACT-RULES.md']);
+if(CODE){files.push(['claude-code/CLAUDE.md.txt'],['claude-code/SETUP.md'],['claude-code/tools/package.json']);for(const n of ['build','check','preview','serve','walk'])files.push([`claude-code/tools/${n}.mjs.txt`]);}
+const bad=[],written=[];
+for(const [s] of files){const src=await rd(KIT+'/kit/'+s);if(src==null){bad.push('kit file missing: '+s);continue;}
+ const out=/(\.mjs\.txt|package\.json)$/.test(s)?src:fill(src);
+ if(!/\.mjs\.txt$/.test(s)){const left=out.match(/\{\{\w+\}\}|<!--\/?if:\w+-->/g);if(left)bad.push(s+': unfilled '+[...new Set(left)].join(' '));}
+ await saveFile(OUT+'/'+s,out);written.push(s);}
+if(CODE){await saveFile(OUT+'/claude-code/tools/ds.config.json',JSON.stringify({name:P.name,short:P.short,ns:P.ns,accent:P.accent},null,2)+'\n');written.push('claude-code/tools/ds.config.json');
+ const tools=written.filter(p=>p.startsWith('claude-code/tools/')).map(p=>p.split('/').pop()).sort().join(',');
+ const want='build.mjs.txt,check.mjs.txt,ds.config.json,package.json,preview.mjs.txt,serve.mjs.txt,walk.mjs.txt';
+ if(tools!==want)bad.push('G5 tools = '+tools);}
+if(written.some(p=>/\.(m?js|jsx|tsx)$/.test(p)))bad.push('G5 a .js/.mjs would be written');
+if(bad.length)fail(bad.join(' | '));
+log(`kit filled: ${written.length} files → ${OUT}/ · flags on: ${Object.entries(F).filter(([k,v])=>v).map(([k])=>k).join(', ')} · G5 ${CODE?'pass':'n/a'}`);

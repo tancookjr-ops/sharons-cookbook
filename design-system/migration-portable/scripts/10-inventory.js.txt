@@ -1,0 +1,51 @@
+// Phase 1.1–1.3 · resumable inventory. Call repeatedly until it logs DONE.
+// ARGS: {roots?:[paths], restart?:true, budgetMs?:18000}
+const P=await loadP();const T0=Date.now(),BUDGET=ARGS.budgetMs||18000,ST=OUT+'/_work/walk.json';
+let st=ARGS.restart?null:await rdJSON(ST);
+if(!st)st={items:(ARGS.roots||['']).map(p=>({p,d:true})),recs:[],dirs:0,done:false};
+if(st.done){log(`DONE already — ${st.recs.length} files, ${st.dirs} folders. Pass {restart:true} to redo.`);return;}
+const TEXT=/\.(md|txt|html?|css|m?jsx?|tsx?|json|svg|csv|ya?ml|sql|xml|zone|mdx|env|ini|toml|sh)$/i;
+const SEC_PATH=/SECRETS|env-models|(^|\/)\.env/i;
+const SEC_BODY=/(sk_live|sk_test|ghp_|github_pat_|AKIA|-----BEGIN [A-Z ]*PRIVATE KEY|password\s*[:=]\s*\S{6,}|api[_-]?key\s*[:=]\s*\S{12,})/i;
+const css=new Set(P.cssFiles);
+const cls=p=>{const parts=p.split('/'),n=parts[parts.length-1],top=parts.length>1?parts[0]:'';
+ if(!top&&['_ds_bundle.js','_ds_manifest.json','_adherence.oxlintrc.json'].includes(n))return'compiler-output';
+ if(n==='AGENTS.md'||(!top&&/^(CLAUDE|MAP|SKILL)\.md$/.test(n))||top==='laws')return'agent-law';
+ if(!top&&/^(STATE.*|THREADS|JOBS|BACKLOG|github|COMMIT|REPO-INDEX)\.md$/.test(n))return'continuity';
+ if(css.has(p)||top==='tokens')return'tokens';
+ if(top===KIT||top==='migration')return'migration-kit';
+ if(top==='components')return'component';
+ if(top==='guidelines')return'card';
+ if(top==='ui_kits')return'ui-kit';
+ if(top==='templates')return'template';
+ if(p.startsWith('assets/copy/'))return'copy-doc';
+ if(top==='assets')return'brand-asset';
+ if(['export','exports','github-staging','ops'].includes(top))return'code-payload';
+ if(top==='locker')return'parked';
+ if(top==='uploads')return'founder-upload';
+ if(['screenshots','scraps','scratch'].includes(top)||(!top&&/^tmp-/.test(n)))return'scratch';
+ if(!top&&/\.md$/i.test(n))return'reference-doc';
+ return'deliverable';};
+const skip=p=>p===OUT||p.startsWith(OUT+'/');
+while(st.items.length&&Date.now()-T0<BUDGET){
+ const it=st.items.shift(),p=it.p;if(p&&skip(p))continue;
+ const looksFile=!!p&&/\.[A-Za-z0-9]{1,8}$/.test(p.split('/').pop());
+ if(it.d||!looksFile){const names=await lsn(p);
+  if(names.length){if(p)st.dirs++;for(const n of names)st.items.push({p:p?p+'/'+n:n});continue;}
+  if(!p)continue;}
+ let bl;try{bl=await readFileBinary(p)}catch(e){
+  if(looksFile){const names=await lsn(p);if(names.length){st.dirs++;for(const n of names)st.items.push({p:p+'/'+n});}}
+  continue;}
+ const r={path:p,bytes:bl.size,ext:((p.match(/\.([A-Za-z0-9]+)$/)||[])[1]||'').toLowerCase(),class:cls(p)};
+ if(SEC_PATH.test(p))r.secret='path';
+ if(TEXT.test(p)&&bl.size<2097152){const t=await bl.text();
+  const m=t.match(SEC_BODY);
+  if(m){const key=m[1].replace(/\s*[:=][\s\S]*$/,'').slice(0,16);if(!r.secret)r.secret='body:'+key;r.secretCtx=t.slice(Math.max(0,m.index-60),m.index).replace(/\s+/g,' ')+'['+key+' …value hidden]';}
+  if(t.includes('\uFFFD'))r.fffd=true;
+  if(/\.html?$/i.test(p)){const head=t.slice(0,600);const cm=head.match(/^\s*<!--\s*@dsCard\b([^>]*)-->/);if(cm)r.card=cm[1].trim();
+   if(/<!--\s*@template\b/.test(head))r.tpl=true;if(/__bundler\/(manifest|template)/.test(t))r.bundled=true;}}
+ if(p.startsWith('uploads/')&&bl.size>0){try{const h=await crypto.subtle.digest('SHA-1',await bl.arrayBuffer());r.sha=[...new Uint8Array(h)].slice(0,8).map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){}}
+ st.recs.push(r);}
+if(!st.items.length){st.done=true;st.recs.sort((a,b)=>a.path<b.path?-1:1);await saveFile(OUT+'/INVENTORY.json',JSON.stringify(st.recs));}
+await saveFile(ST,JSON.stringify(st));
+log(st.done?`DONE — ${st.recs.length} files, ${st.dirs} folders (files + folders = ${st.recs.length+st.dirs}). Next: 11-inventory-report.`:`progress — ${st.recs.length} files so far, ${st.items.length} paths queued. Call again.`);

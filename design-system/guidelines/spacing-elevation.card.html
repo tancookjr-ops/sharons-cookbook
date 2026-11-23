@@ -1,0 +1,25 @@
+<!-- @dsCard group="Spacing" viewport="700x210" name="Elevation" subtitle="Two soft, ink-tinted shadows — resting and lifted" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); padding: 26px 30px; color: var(--text); font-family: var(--font-body); }
+  .row { display: flex; gap: 40px; flex-wrap: wrap; }
+  .item { text-align: center; }
+  .demo { width: 150px; height: 82px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .e-card { box-shadow: var(--shadow-card); }
+  .e-pop { box-shadow: var(--shadow-pop); }
+  .nm { font-weight: 700; font-size: .8rem; margin-top: 14px; }
+  .val { font-size: .72rem; color: var(--text-soft); }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#8FAE84"/><text x="50" y="62" font-size="34" text-anchor="middle" fill="#1A1A1A" font-family="serif">SC</text></svg></template>
+  <div class="row">
+    <div class="item"><div class="demo e-card"></div><div class="nm">--shadow-card</div><div class="val">Resting: cards, tables, inputs</div></div>
+    <div class="item"><div class="demo e-pop"></div><div class="nm">--shadow-pop</div><div class="val">Lifted: hover, dialogs, toasts, menus</div></div>
+  </div>
+</body>
+</html>

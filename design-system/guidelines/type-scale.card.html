@@ -1,0 +1,30 @@
+<!-- @dsCard group="Type" viewport="700x240" name="Type scale" subtitle="The em-based ramp from caption to page title" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); padding: 20px 24px; color: var(--text); font-family: var(--font-body); }
+  .row { display: flex; align-items: baseline; gap: 16px; padding: 5px 0; border-bottom: 1px dashed var(--border); }
+  .row:last-child { border-bottom: none; }
+  .tok { width: 118px; font-size: .72rem; color: var(--text-soft); font-variant-numeric: tabular-nums; flex: none; }
+  .samp { line-height: 1.1; }
+  .s-h1 { font-family: var(--font-display); font-size: 1.9rem; font-weight: 600; }
+  .s-h2 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; }
+  .s-h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; }
+  .s-body { font-size: 1rem; }
+  .s-sm { font-size: .9rem; }
+  .s-xs { font-size: .78rem; }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#8FAE84"/><text x="50" y="62" font-size="34" text-anchor="middle" fill="#1A1A1A" font-family="serif">SC</text></svg></template>
+  <div class="row"><span class="tok">--text-h1 · 1.9em</span><span class="samp s-h1">Garden chili</span></div>
+  <div class="row"><span class="tok">--text-h2 · 1.35em</span><span class="samp s-h2">Garden chili</span></div>
+  <div class="row"><span class="tok">--text-h3 · 1.1em</span><span class="samp s-h3">Garden chili</span></div>
+  <div class="row"><span class="tok">--text-body · 1rem</span><span class="samp s-body">Garden chili</span></div>
+  <div class="row"><span class="tok">--text-sm · 0.9em</span><span class="samp s-sm">Garden chili</span></div>
+  <div class="row"><span class="tok">--text-xs · 0.78em</span><span class="samp s-xs">Garden chili</span></div>
+</body>
+</html>

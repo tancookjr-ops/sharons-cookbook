@@ -1,0 +1,30 @@
+/* ==================================================================
+   styles.css — Sharon's Cookbook design system entry point.
+
+   Consumers link THIS one file. It is a manifest of @import lines only;
+   every rule lives in a focused file below. Order matters: fonts and
+   tokens first (they define the custom properties everything else
+   references), then base element styles, then shared primitives, then
+   feature compositions.
+
+   Palette & type: coastal Nova Scotia meets a Mediterranean kitchen.
+   Ground truth: tancookjr-ops/sharons-cookbook (see readme.md).
+   ================================================================== */
+
+/* 1 — webfonts (display fallback; see fonts.css) */
+@import url("tokens/fonts.css");
+
+/* 2 — design tokens (CSS custom properties) */
+@import url("tokens/colors.css");
+@import url("tokens/typography.css");
+@import url("tokens/spacing.css");
+@import url("tokens/shape.css");
+
+/* 3 — base element styles + reset */
+@import url("base.css");
+
+/* 4 — shared UI primitives (buttons, chips, inputs, cards, …) */
+@import url("components.css");
+
+/* 5 — feature compositions (shell, recipe cards, planner, pantry, …) */
+@import url("patterns.css");

@@ -1,0 +1,44 @@
+/* ==================================================================
+   shape.css — corner radii, borders, elevation, motion.
+
+   Soft rounded corners and two low, warm-tinted shadows. Shadows are
+   tinted with the ink hue (rgb 44 51 45) rather than pure black, so
+   elevation reads soft and natural. Values verbatim from css/app.css.
+   ================================================================== */
+
+:root {
+  /* --- radii --- */
+  --radius:     12px;    /* cards, dialogs, panels        */
+  --radius-sm:  8px;     /* inputs, chips-in-slots, tiles */
+  --radius-pill: 999px;  /* buttons, chips, segmented ctl */
+
+  /* --- borders --- */
+  --border-width: 1px;
+  --border-color: var(--border);   /* hairline; see colors.css */
+
+  /* --- elevation (ink-tinted, low and soft) --- */
+  --shadow-card: 0 1px 2px rgb(44 51 45 / .06), 0 4px 16px rgb(44 51 45 / .07);
+  --shadow-pop:  0 4px 12px rgb(44 51 45 / .14), 0 12px 40px rgb(44 51 45 / .18);
+
+  /* focus ring: 3px soft primary halo used on inputs */
+  --ring: 0 0 0 3px var(--primary-soft);
+
+  /* --- motion --- */
+  --ease:        cubic-bezier(.2, .6, .2, 1);  /* @kind other */
+  --dur-fast:    .12s;   /* @kind other */
+  --dur-base:    .15s;   /* @kind other */
+  --dur-slow:    .22s;   /* @kind other */
+}
+
+/* Dark mode deepens the shadows (see colors.css keeps colour tokens;
+   these live here because they are elevation, not palette). */
+[data-theme="dark"] {
+  --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 4px 16px rgb(0 0 0 / .25);
+  --shadow-pop:  0 4px 12px rgb(0 0 0 / .4), 0 12px 40px rgb(0 0 0 / .5);
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 4px 16px rgb(0 0 0 / .25);
+    --shadow-pop:  0 4px 12px rgb(0 0 0 / .4), 0 12px 40px rgb(0 0 0 / .5);
+  }
+}

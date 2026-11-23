@@ -1,0 +1,51 @@
+name: Deploy to Staging
+
+# Adapted from BorealCodex's deploy-staging.yml.
+# Every push to `Develop` (the default branch, where all updates start) goes to
+# staging, plus a manual "Run workflow" button. Staging is the CHECK 2 gate:
+# view it on the phone before promoting.
+#   - FTP staging folder, when the FTP secrets exist (ftp.yml)
+#   - GitHub Pages /staging/, always (pages.yml) — sandboxed, never touches real data
+on:
+  push:
+    branches: [Develop]
+    paths-ignore:
+      - '**.md'
+      - 'work/**'
+      - '_shared/**'
+      - '_templates/**'
+      - '_archive/**'
+      - '.claude/**'
+  workflow_dispatch:
+
+# Staging has its own lock so it never blocks (or is blocked by) a production deploy.
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    # Nothing reaches staging if a recipe breaks the structure in _shared/recipe-structure.md.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - run: node scripts/check-recipes.mjs
+
+  ftp:
+    needs: check
+    uses: ./.github/workflows/ftp.yml
+    with:
+      target: staging
+      ref: ${{ github.sha }}
+    secrets: inherit
+
+  pages:
+    needs: check
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

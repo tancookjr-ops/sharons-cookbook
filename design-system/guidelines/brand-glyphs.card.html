@@ -1,0 +1,33 @@
+<!-- @dsCard group="Brand" viewport="700x180" name="Iconography — action & meta glyphs" subtitle="Stars, timers, steppers and row actions" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); padding: 20px 24px; color: var(--text); font-family: var(--font-body); }
+  .row { display: flex; gap: 22px; flex-wrap: wrap; }
+  .item { text-align: center; min-width: 68px; }
+  .gly { font-size: 1.35rem; line-height: 1.4; }
+  .lbl { font-size: .68rem; color: var(--text-soft); }
+  .fav { color: var(--warn); }
+  .pantry { color: var(--primary); font-weight: 700; }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#8FAE84"/><text x="50" y="62" font-size="34" text-anchor="middle" fill="#1A1A1A" font-family="serif">SC</text></svg></template>
+  <div class="row">
+    <div class="item"><div class="gly fav">★</div><div class="lbl">favourite</div></div>
+    <div class="item"><div class="gly">☆</div><div class="lbl">not fav</div></div>
+    <div class="item"><div class="gly">⏱</div><div class="lbl">timer</div></div>
+    <div class="item"><div class="gly">🌡</div><div class="lbl">temp</div></div>
+    <div class="item"><div class="gly pantry">✓</div><div class="lbl">in pantry</div></div>
+    <div class="item"><div class="gly">＋</div><div class="lbl">add</div></div>
+    <div class="item"><div class="gly">−</div><div class="lbl">remove</div></div>
+    <div class="item"><div class="gly">✕</div><div class="lbl">delete</div></div>
+    <div class="item"><div class="gly">⠿</div><div class="lbl">drag</div></div>
+    <div class="item"><div class="gly">↑↓</div><div class="lbl">reorder</div></div>
+  </div>
+  <p style="font-size:.76rem;color:var(--text-soft);margin:16px 0 0">Season emoji (🌱 🌿 🍂 ❄) appear only in the dashboard greeting. Elsewhere, emoji are avoided in favour of these monochrome glyphs.</p>
+</body>
+</html>

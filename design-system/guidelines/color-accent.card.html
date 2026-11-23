@@ -1,0 +1,25 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Accent — Sea glass" subtitle="Soft coastal teal for info, health notes, secondary tags" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); padding: 20px 22px; font-family: var(--font-body); color: var(--text); }
+  .sw { display: flex; gap: 14px; flex-wrap: wrap; }
+  .chip { width: 156px; }
+  .box { height: 74px; border-radius: 10px; border: 1px solid rgb(0 0 0 / .06); }
+  .nm { font-weight: 700; font-size: .8rem; margin-top: 9px; }
+  .hx { font-size: .72rem; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .use { font-size: .7rem; color: var(--text-soft); margin-top: 2px; }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#8FAE84"/><text x="50" y="62" font-size="34" text-anchor="middle" fill="#1A1A1A" font-family="serif">SC</text></svg></template>
+  <div class="sw">
+    <div class="chip"><div class="box" style="background:var(--seaglass)"></div><div class="nm">--seaglass · --accent</div><div class="hx">#63a294</div><div class="use">Info chips, meal-type labels</div></div>
+    <div class="chip"><div class="box" style="background:var(--seaglass-soft)"></div><div class="nm">--seaglass-soft · --accent-soft</div><div class="hx">#ddeeea</div><div class="use">Health-note panels, harvest cells</div></div>
+    <div class="chip"><div class="box" style="background:var(--seaglass);outline:3px solid var(--seaglass-soft);outline-offset:-3px"></div><div class="nm">Focus ring</div><div class="hx">accent + soft</div><div class="use">Keyboard focus outline</div></div>
+  </div>
+</body>
+</html>

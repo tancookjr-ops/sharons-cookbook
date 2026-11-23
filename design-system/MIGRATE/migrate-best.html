@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Copy · Migrate Sharon's Cookbook</title>
+<style>
+:root{--copy-accent:#8FAE84}
+body{margin:0;padding:16px 14px 44px;background:#f4f1ea;color:#1a1815;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+h1{margin:0 0 3px;font-family:inherit;font-size:15px;font-weight:600;line-height:1.3;letter-spacing:.06em;text-transform:uppercase;color:#6b6558}
+h2{margin:24px 0 8px;padding-bottom:5px;font-family:inherit;font-size:13px;font-weight:700;line-height:1.3;letter-spacing:.05em;text-transform:uppercase;color:#1a1815;border-bottom:1px solid #d8d2c4}
+p,li{max-width:44em;overflow-wrap:anywhere}p{margin:0 0 14px}
+p.note{font-size:13px;color:#6b6558}
+label.lbl{display:block;margin:12px 0 4px;font-family:inherit;font-size:11px;font-weight:700;line-height:1.3;letter-spacing:.04em;text-transform:uppercase;color:#6b6558}
+label.tick{display:flex;gap:.55em;align-items:flex-start;margin:0 0 10px;font-size:14px;cursor:pointer}
+label.tick input{margin:.3em 0 0;min-width:20px;min-height:20px}
+textarea{width:100%;box-sizing:border-box;font:13px/1.45 ui-monospace,Menlo,monospace;padding:8px;border:1px solid #cfc8b8;border-radius:4px;background:#fff;color:#1a1815}
+.fence{border:2px solid #b3261e;border-radius:4px;padding:4px 12px 8px;margin:8px 0}
+a{color:#1a5fb4}a:hover{color:#123f78}code{font-size:13px}
+</style>
+</head>
+<body>
+<h1>Migrate Sharon's Cookbook — 2026-11-22</h1>
+<p class="note">Do the steps in order. The tool closes 2026-12-14. Chats and comments are deleted after 2026-12-14. Close every chat before then.</p>
+<h2>1 · Save the backups</h2>
+<label class="tick"><input type="checkbox" data-tick="t1"><span>Tap the <b>Sharon's Cookbook — full project backup</b> download card in the chat. Save the zip. Pass: the zip is in Downloads.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t2"><span>Here: Share → <b>Project HTML</b> → keep <b>Project archive</b> → <b>Export</b>. Pass: a second zip downloads. Stop: if Export fails, send me the error text.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t3"><span>Copy BOTH zips to two places: phone Files, and a computer or cloud drive. Pass: both open in each place.</span></label>
+<h2>2 · Account data export (best effort)</h2>
+<label class="tick"><input type="checkbox" data-tick="t4"><span>Use a computer, or the phone’s Safari/Chrome — <b>not the Claude app</b> (the app has no export). Open <a href="https://claude.ai">claude.ai</a> and sign in. On a phone browser: <b>aA</b> / ⋮ → <b>Request Desktop Website</b>.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t5"><span>Bottom-left: your initials → <b>Settings</b> → <b>Privacy</b> → <b>Export data</b> → <b>Export</b>. Pass: an email from Anthropic arrives. Stop: no <b>Export data</b> button (Team plans: only the owner can export) → skip this step; closing the chats is the record that counts.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t6"><span>Download from the email within 24 hours (the link expires). Save it next to the backups.</span></label>
+<h2>3 · Close the remaining chats</h2>
+<p>Open each chat below and send <code>Write a short summary of this chat (decisions, open items, files changed) at the top of CHAT-SUMMARIES.md in the project root.</code>. Pass: <code>CHAT-SUMMARIES.md</code> shows the new section. Stop: a chat will not open → note it as lost.</p>
+<label class="tick"><input type="checkbox" data-tick="t7"><span><b>Migration sweep (this chat, 2026-11-22)</b> — open — the sweep runs in it</span></label>
+<label class="tick"><input type="checkbox" data-tick="t8"><span><b>Every other chat in this project's chat list</b> — no ledger — check by hand</span></label>
+<label class="tick"><input type="checkbox" data-tick="t9"><span>When all are closed: in a new chat here, say <code>migrate the project to the best solution</code> again, then redo step 1 with the new zip.</span></label>
+<h2>4 · Claude.ai Project</h2>
+<label class="tick"><input type="checkbox" data-tick="t10"><span>claude.ai → Projects → <b>Create project</b> → name it <code>Sharon's Cookbook</code>.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t11"><span>Project → <b>Set project instructions</b>. Tap the field below, copy, paste, Save.</span></label>
+<label class="lbl" for="instructions">Project instructions — paste into the instructions box</label>
+<textarea id="instructions" readonly rows="16">You work for the owner of **Sharon's Cookbook Design System**. The project's key files are in this Project's knowledge.
+
+## You have NO compiler and NO file preview. Act accordingly.
+- You cannot run, build or screenshot project files. Never say you "checked",
+  "verified", "rendered" or "tested" one. Say "unverified — needs
+  `npm run check` / `npm run preview` in Claude Code".
+- You CAN render an artifact. To show a design, build ONE self-contained HTML
+  artifact under `ARTIFACT-RULES.md`, starting from `sharon-s-cookbook-starter.html`. Never link
+  project files by relative path from an artifact.
+- Knowledge is READ ONLY. Use the write-back protocol below.
+
+## Write-back protocol (replaces direct file edits)
+1. Produce the changed file as ONE artifact titled with its exact path. Full
+   file when small or new; find/replace pairs quoted exactly from knowledge
+   when large.
+2. Under it, numbered clicks: open the file in the computer copy of the
+   backup → Select All → paste (or apply the pairs) → save.
+4. One file per artifact, never more.
+
+## The moved design-system artifact
+If the owner ran Move to Claude, Sharon's Cookbook Design System exists as a design-system artifact
+(Settings → design systems). Use it for new designs. It changes only by asking
+Claude; any brand or component change there must ALSO go back through
+write-back, or the two drift.
+
+## Orientation, every chat
+0. Knowledge has no folders: a file at `a/b/c.md` is stored as `a__b__c.md`,
+   and non-Markdown files carry an extra `.txt`. `00-FILE-MAP.md` maps every
+   name back to its path.
+1. `START-HERE.md` §§ 0–3. 2. the root agent map's routing table, if any.
+3. Read ONLY the files they point at. Anything stamped SUPERSEDED is history.
+
+## Always-on rules
+- **Dialogue first.** Build only when the owner says to go ahead.
+- **Derive, never describe.** Never state a count you did not compute from
+  the text in front of you.
+- **The owner decides every production release.** Red-fence any prod step.
+- **Copy-buttons for everything copyable.** Payloads in fenced blocks;
+  multi-step runbooks as an HTML artifact with numbered clicks and a pass
+  signal and stop condition per step.
+- **Questions:** one numbered list, a default for each, a free-text line.
+
+## Hard invariants
+(No invariants section was found in CLAUDE.md or readme.md. Ask the owner for the brand rules before designing anything.)
+
+## Smoke test
+Ask: "What are this project's hard invariants?" A correct answer quotes them from these instructions and does NOT claim to have edited any file.</textarea>
+<label class="tick"><input type="checkbox" data-tick="t12"><span>Tap the <b>Sharon's Cookbook — Claude.ai knowledge</b> download card in the chat and unzip it. Pass: one folder of 52 files.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t13"><span>Project knowledge → <b>+</b> → <b>Upload</b> → open that folder → <b>Select all</b> → upload. Pass: 52 files listed. Stop: a file is refused → send me its name.</span></label>
+<p class="note">That folder holds only what belongs in knowledge — nothing to pick or skip. Knowledge has no folders, so each file's path is in its name (<code>laws__a.md</code> = <code>laws/a.md</code>); <code>00-FILE-MAP.md</code> lists them all. The same folder is <code>MIGRATE/claude-ai/knowledge/</code> in the full backup.</p>
+<label class="tick"><input type="checkbox" data-tick="t14"><span>Smoke test, in a new chat inside the Project — Ask: "What are this project's hard invariants?" A correct answer quotes them from these instructions and does NOT claim to have edited any file. Stop: otherwise, send me its reply.</span></label>
+<h2>5 · Claude Code (on a computer)</h2>
+<p class="note">Each field is one terminal paste, in order. Reference: <code>MIGRATE/claude-code/SETUP.md</code>.</p>
+<label class="tick"><input type="checkbox" data-tick="t15"><span><b>1. Unzip the backup into a new local repo</b> — paste the field below.</span></label>
+<label class="lbl" for="setup1">Block 1 — Unzip the backup into a new local repo</label>
+<textarea id="setup1" readonly rows="7">mkdir -p ~/code/sharon-s-cookbook
+cd ~/code/sharon-s-cookbook
+git init -b main
+mkdir -p design-system
+unzip -q ~/Downloads/&lt;backup-zip-name&gt;.zip -d design-system
+ls design-system/MIGRATE/START-HERE.md</textarea>
+<p class="note">Pass: the path prints.<br>Stop: if the zip unpacked into a sub-folder, move its contents up one level.</p>
+<label class="tick"><input type="checkbox" data-tick="t16"><span><b>2. Install the agent map and the tools</b> — paste the field below.</span></label>
+<label class="lbl" for="setup2">Block 2 — Install the agent map and the tools</label>
+<textarea id="setup2" readonly rows="8">cd design-system
+[ -f CLAUDE.md ] &amp;&amp; mv CLAUDE.md CLAUDE.design-tool.md
+cp MIGRATE/claude-code/CLAUDE.md.txt CLAUDE.md
+cp -R MIGRATE/claude-code/tools tools
+for f in tools/*.mjs.txt; do mv "$f" "${f%.txt}"; done
+cat MIGRATE/claude-code/EXCLUDE.txt &gt;&gt; .gitignore
+printf "node_modules/\nscreenshots/preview/\n" &gt;&gt; tools/.gitignore</textarea>
+<p class="note">Pass: <code>ls tools</code> shows <code>build.mjs check.mjs ds.config.json package.json preview.mjs serve.mjs walk.mjs</code>.</p>
+<label class="tick"><input type="checkbox" data-tick="t17"><span><b>3. Install the compiler and the browser</b> — paste the field below.</span></label>
+<label class="lbl" for="setup3">Block 3 — Install the compiler and the browser</label>
+<textarea id="setup3" readonly rows="4">cd tools
+npm install
+npx playwright install chromium</textarea>
+<p class="note">Pass: no <code>ERR!</code> lines.<br>Stop: <code>npm</code> missing → install Node 20 LTS from nodejs.org and redo this block.</p>
+<label class="tick"><input type="checkbox" data-tick="t18"><span><b>4. Prove it works</b> — paste the field below.</span></label>
+<label class="lbl" for="setup4">Block 4 — Prove it works</label>
+<textarea id="setup4" readonly rows="4">npm run check
+npm run preview -- --cards
+npm run build</textarea>
+<p class="note">Pass: <code>check</code> ends with <code>0 errors</code>; <code>preview</code> lists one PNG per card with <code>console errors: 0</code>; <code>build</code> prints a <code>components:</code> line with no error after it.<br>Stop: send the first error line to Claude Code and say "fix the migration check".</p>
+<label class="tick"><input type="checkbox" data-tick="t19"><span><b>5. Commit locally</b> — paste the field below.</span></label>
+<label class="lbl" for="setup5">Block 5 — Commit locally</label>
+<textarea id="setup5" readonly rows="4">cd ../..
+git add -A
+git commit -m "chore: import sharon-s-cookbook from design tool"</textarea>
+<p class="note">Pass: <code>git log --oneline -1</code> shows the commit. To back it up, create a PRIVATE GitHub repo and push when ready.</p>
+<label class="tick"><input type="checkbox" data-tick="t20"><span><b>6. Start Claude Code</b> — paste the field below.</span></label>
+<label class="lbl" for="setup6">Block 6 — Start Claude Code</label>
+<textarea id="setup6" readonly rows="3">cd ~/code/sharon-s-cookbook/design-system
+claude</textarea>
+<p class="note">First message: <code>Read MIGRATE/START-HERE.md and CLAUDE.md, then pickup.</code></p>
+<label class="tick"><input type="checkbox" data-tick="t21"><span>Pass for this step: <code>npm run check</code> prints <code>0 errors</code>.</span></label>
+<h2>6 · Official Move to Claude ⛔</h2>
+<div class="fence">
+<p><b>This makes the original read-only forever.</b> Do it only after every step above passes.</p>
+<label class="tick"><input type="checkbox" data-tick="t22"><span>Precondition: both backup zips are saved (and the account export, if your plan allows it), and every chat in the close step is closed.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t23"><span>Here: open the design system → <b>Check whether this design system can move to Claude</b> → <b>Check</b>. Pass: "Nothing found in the way". Stop: it names files → send me the list; I fix only those (from <code>MOVE-PREFLIGHT.md</code>), then Check again.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t24"><span>claude.ai → Artifacts → "Claude Design lives here now" banner → <b>Move</b> (or the Design tile "…" menu). Keep the tab open. Pass: "Moved" with an Open link. Stop: "Didn't move" + a reason → Check again, then <b>Move again</b>.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t25"><span>Settings → design systems. Pass: it is listed. Use it for new designs.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t26"><span>Freeze: nobody edits this project in the old tool from now on.</span></label>
+</div>
+<h2>7 · Finish — delete nothing</h2>
+<label class="tick"><input type="checkbox" data-tick="t27"><span>Keep the backup zips in both places. Pass: you can open them from the computer.</span></label>
+<label class="tick"><input type="checkbox" data-tick="t28"><span>Delete nothing in the old tool. It closes 2026-12-14.</span></label>
+<script>/* copy-all.js (inlined) */
+/* copy-all.js — tap-anywhere-to-select-all payload fields for copy docs.
+   Load once per doc, after the payload markup:  <script src="copy-all.js"><\/script>
+
+   Enhances every <textarea readonly> in the page: tapping (or focusing) one
+   selects the whole payload, so ⌘C / long-press → Copy finishes the job.
+   Clipboard WRITES are permission-denied in the preview frame — selection
+   APIs are not — so this never claims to have copied anything.
+
+   Progressive by design: if this file fails to load, the payload is still
+   visible in a real textarea and still selectable by hand. */
+(function () {
+  var SEL = 'textarea[readonly]';
+  var CSS =
+    'textarea[readonly]{width:100%;box-sizing:border-box;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;background:#f7f5ef;color:#111;border:1px solid #cfc8b8;border-radius:4px;padding:.5em;cursor:pointer;-webkit-text-size-adjust:100%}' +
+    'textarea[readonly]:focus{outline:none;border-color:var(--copy-accent,#555);box-shadow:0 0 0 2px color-mix(in srgb,var(--copy-accent,#555) 18%,transparent)}' +
+    '.copy-all-hint{margin:.3em 0 1.1em;font:12px/1.4 system-ui,sans-serif;color:#555}' +
+    '.copy-all-hint b{color:var(--copy-accent,#555)}';
+
+  function styles() {
+    if (document.getElementById('copy-all-css')) return;
+    var s = document.createElement('style');
+    s.id = 'copy-all-css';
+    s.textContent = CSS;
+    document.head.appendChild(s);
+  }
+
+  function chars(t) {
+    return t.value.length.toLocaleString('en-CA') + ' characters';
+  }
+
+  function enhance(t) {
+    if (t.dataset.copyAll === 'on') return;
+    t.dataset.copyAll = 'on';
+    t.setAttribute('spellcheck', 'false');
+    t.setAttribute('autocapitalize', 'off');
+    t.setAttribute('autocorrect', 'off');
+    var hint = document.createElement('p');
+    hint.className = 'copy-all-hint';
+    hint.textContent = 'Tap the field to select all \u00b7 ' + chars(t);
+    t.insertAdjacentElement('afterend', hint);
+    t._copyAllHint = hint;
+  }
+
+  function selectAll(t) {
+    try {
+      t.focus({ preventScroll: true });
+      t.setSelectionRange(0, t.value.length);
+    } catch (e) {
+      try { t.select(); } catch (e2) { return; }
+    }
+    var hint = t._copyAllHint;
+    if (hint) {
+      hint.innerHTML = '<b>Selected</b> \u2014 press \u2318C, or long-press \u2192 Copy \u00b7 ' + chars(t);
+    }
+  }
+
+  function onEvent(ev) {
+    var t = ev.target;
+    if (!t || !t.matches || !t.matches(SEL)) return;
+    selectAll(t);
+  }
+
+  function init() {
+    styles();
+    var all = document.querySelectorAll(SEL);
+    for (var i = 0; i < all.length; i++) enhance(all[i]);
+  }
+
+  document.addEventListener('click', onEvent, true);
+  document.addEventListener('focusin', onEvent, true);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+</script>
+<script>
+(function(){var K='migrate-sharon-s-cookbook-2026-11-22',s={};try{s=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){}
+document.querySelectorAll('[data-tick]').forEach(function(b){b.checked=!!s[b.dataset.tick];
+b.addEventListener('change',function(){s[b.dataset.tick]=b.checked;try{localStorage.setItem(K,JSON.stringify(s))}catch(e){}})})})();
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!-- @dsCard group="Colors" viewport="700x200" name="Dark theme" subtitle="Deep herb-and-charcoal surfaces; sage and sea glass lift" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); padding: 20px 22px; font-family: var(--font-body); color: var(--text); }
+  .sw { display: flex; gap: 14px; flex-wrap: wrap; }
+  .chip { width: 132px; }
+  .box { height: 64px; border-radius: 10px; border: 1px solid var(--border); }
+  .nm { font-weight: 700; font-size: .74rem; margin-top: 8px; }
+  .hx { font-size: .7rem; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#8FAE84"/><text x="50" y="62" font-size="34" text-anchor="middle" fill="#1A1A1A" font-family="serif">SC</text></svg></template>
+  <div class="sw">
+    <div class="chip"><div class="box" style="background:var(--bg)"></div><div class="nm">--bg</div><div class="hx">#1d2521</div></div>
+    <div class="chip"><div class="box" style="background:var(--surface)"></div><div class="nm">--surface</div><div class="hx">#273129</div></div>
+    <div class="chip"><div class="box" style="background:var(--surface-2)"></div><div class="nm">--surface-2</div><div class="hx">#303b32</div></div>
+    <div class="chip"><div class="box" style="background:var(--primary)"></div><div class="nm">--primary</div><div class="hx">#8fae84</div></div>
+    <div class="chip"><div class="box" style="background:var(--accent)"></div><div class="nm">--accent</div><div class="hx">#7fb8ab</div></div>
+  </div>
+  <p style="margin:16px 0 0;font-size:.82rem;color:var(--text-soft)">Set <code style="font-family:var(--font-mono)">data-theme="dark"</code> (or <code style="font-family:var(--font-mono)">"auto"</code>) on the root. Text warms to <span style="color:var(--text);font-weight:600">#e9e5d9</span>; shadows deepen toward black.</p>
+</body>
+</html>

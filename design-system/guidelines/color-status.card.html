@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Status — Terracotta & amber" subtitle="Danger (terracotta) and warning (amber) with soft pairs" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); padding: 20px 22px; font-family: var(--font-body); color: var(--text); }
+  .sw { display: flex; gap: 14px; flex-wrap: wrap; }
+  .chip { width: 156px; }
+  .box { height: 74px; border-radius: 10px; border: 1px solid rgb(0 0 0 / .06); }
+  .nm { font-weight: 700; font-size: .8rem; margin-top: 9px; }
+  .hx { font-size: .72rem; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .use { font-size: .7rem; color: var(--text-soft); margin-top: 2px; }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#8FAE84"/><text x="50" y="62" font-size="34" text-anchor="middle" fill="#1A1A1A" font-family="serif">SC</text></svg></template>
+  <div class="sw">
+    <div class="chip"><div class="box" style="background:var(--terracotta)"></div><div class="nm">--terracotta · --danger</div><div class="hx">#c05f36</div><div class="use">Delete, expired, errors</div></div>
+    <div class="chip"><div class="box" style="background:var(--terracotta-soft)"></div><div class="nm">--terracotta-soft · --danger-soft</div><div class="hx">#f6e3d9</div><div class="use">Danger-ghost hover, chips</div></div>
+    <div class="chip"><div class="box" style="background:var(--warn)"></div><div class="nm">--warn</div><div class="hx">#b98a2e</div><div class="use">Low stock, "soon", priority</div></div>
+    <div class="chip"><div class="box" style="background:var(--warn-soft)"></div><div class="nm">--warn-soft</div><div class="hx">#f5ecd6</div><div class="use">Warn chips, offline badge</div></div>
+  </div>
+</body>
+</html>

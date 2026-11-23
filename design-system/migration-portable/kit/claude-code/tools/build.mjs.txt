@@ -1,0 +1,53 @@
+// Replaces the design tool's compiler for components. React/ReactDOM come from the page's globals.
+// npm run build             → ../_ds_bundle.components.js
+// npm run build -- --replace → also overwrites ../_ds_bundle.js (first run backs it up to _ds_bundle.snapshot.js)
+import { build } from 'esbuild';
+import { existsSync, copyFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { ROOT } from './serve.mjs';
+import { walk, CONFIG } from './walk.mjs';
+
+const NS = CONFIG.ns || 'DesignSystem';
+const replace = process.argv.includes('--replace');
+
+const comps = walk(ROOT, ROOT)
+  .filter(f => /(^|\/)[A-Z][A-Za-z0-9]*\.d\.ts$/.test(f) && !f.startsWith('templates/'))
+  .map(f => ['.jsx', '.tsx'].map(e => f.replace(/\.d\.ts$/, e)).find(p => existsSync(join(ROOT, p))))
+  .filter(Boolean).sort();
+
+if (!comps.length) { console.log('components: 0 · nothing to build (not a component library)'); process.exit(0); }
+
+const reactGlobal = {
+  name: 'react-global',
+  setup(b) {
+    b.onResolve({ filter: /^react(-dom)?(\/.*)?$/ }, a => ({ path: a.path, namespace: 'rg' }));
+    b.onLoad({ filter: /.*/, namespace: 'rg' }, a => ({
+      loader: 'js',
+      contents: a.path.startsWith('react-dom') ? 'module.exports = window.ReactDOM;'
+        : a.path === 'react/jsx-runtime' || a.path === 'react/jsx-dev-runtime'
+          ? 'const R = window.React; const j = (t, p, k) => R.createElement(t, k === undefined ? p : { ...p, key: k }); module.exports = { jsx: j, jsxs: j, jsxDEV: j, Fragment: R.Fragment };'
+          : 'module.exports = window.React;',
+    })),
+  },
+};
+
+const res = await build({
+  stdin: { contents: comps.map(p => `export * from ${JSON.stringify('./' + p)};`).join('\n'), resolveDir: ROOT, loader: 'js' },
+  bundle: true, format: 'iife', globalName: '__ds_build', write: false, target: 'es2019',
+  jsx: 'transform', loader: { '.js': 'jsx' }, plugins: [reactGlobal], logLevel: 'warning',
+});
+
+const header = `/* ${CONFIG.name || 'Design system'} components — built by tools/build.mjs from: ${comps.join(', ')} */\n`;
+const footer = `\nwindow.${NS} = Object.assign(window.${NS} || {}, __ds_build);\n`;
+const out = header + res.outputFiles[0].text + footer;
+writeFileSync(join(ROOT, '_ds_bundle.components.js'), out);
+
+const names = [...res.outputFiles[0].text.matchAll(/^\s{2}(\w+): \(\) => \w+/gm)].map(m => m[1]);
+console.log(`components: ${comps.length} · exports: ${names.length ? names.join(', ') : '(see bundle)'} · bytes: ${out.length}`);
+
+if (replace) {
+  const snap = join(ROOT, '_ds_bundle.snapshot.js');
+  if (!existsSync(snap) && existsSync(join(ROOT, '_ds_bundle.js'))) copyFileSync(join(ROOT, '_ds_bundle.js'), snap);
+  writeFileSync(join(ROOT, '_ds_bundle.js'), out);
+  console.log('_ds_bundle.js replaced (original kept as _ds_bundle.snapshot.js). Now run: npm run preview -- --cards');
+}

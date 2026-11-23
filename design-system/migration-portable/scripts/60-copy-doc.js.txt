@@ -1,0 +1,114 @@
+// Phase 7 · the owner's copy doc, built + gated. ARGS: {docPath?}
+const P=await loadP();const AI=P.target!=='code',CODE=P.target!=='ai';
+const docPath=ARGS.docPath||(P.has.copyDir?`assets/copy/migrate-${P.target}.html`:`${OUT}/migrate-${P.target}.html`);
+const linkEngine=P.has.copyAll&&docPath.startsWith('assets/copy/')&&!docPath.slice(12).includes('/');
+const engine=linkEngine?'<script src="copy-all.js"></script>':'<script>/* copy-all.js (inlined) */\n'+((await rd(KIT+'/kit/copy-all.js.txt'))||'').replace(/<\/script/gi,'<\\/script')+'\n</script>';
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const unesc=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+const md=s=>esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+const PAY=[];let tk=0;
+const tick=t=>`<label class="tick"><input type="checkbox" data-tick="t${++tk}"><span>${t}</span></label>`;
+const field=(id,label,val,rows)=>{PAY.push([id,val]);return `<label class="lbl" for="${id}">${label}</label>\n<textarea id="${id}" readonly rows="${rows||Math.min(14,val.split('\n').length+1)}">${esc(val)}</textarea>`;};
+const S=[];const sec=(title,body,fence)=>S.push({title,body,fence});
+// 1 backups
+sec('Save the backups',[
+ tick(`Tap the <b>${esc(P.short)} — full project backup</b> download card in the chat. Save the zip. Pass: the zip is in Downloads.`),
+ tick('Here: Share → <b>Project HTML</b> → keep <b>Project archive</b> → <b>Export</b>. Pass: a second zip downloads. Stop: if Export fails, send me the error text.'),
+ tick('Copy BOTH zips to two places: phone Files, and a computer or cloud drive. Pass: both open in each place.')].join('\n'));
+// 2 account export
+sec('Account data export (best effort)',[
+ tick('Use a computer, or the phone’s Safari/Chrome — <b>not the Claude app</b> (the app has no export). Open <a href="https://claude.ai">claude.ai</a> and sign in. On a phone browser: <b>aA</b> / ⋮ → <b>Request Desktop Website</b>.'),
+ tick('Bottom-left: your initials → <b>Settings</b> → <b>Privacy</b> → <b>Export data</b> → <b>Export</b>. Pass: an email from Anthropic arrives. Stop: no <b>Export data</b> button (Team plans: only the owner can export) → skip this step; closing the chats is the record that counts.'),
+ tick('Download from the email within 24 hours (the link expires). Save it next to the backups.')].join('\n'));
+// 3 chats
+const UC=(await rd(OUT+'/chats/UNCLOSED-CHATS.md'))||'';
+const chats=[...UC.matchAll(/^\| ([^|]+?) \| ([^|]+?) \|$/gm)].map(x=>({t:x[1],r:x[2]})).filter(x=>x.t!=='Chat'&&!/^-+$/.test(x.t));
+sec('Close the remaining chats',`<p>Open each chat below and send <code>${esc(P.closePhrase)}</code>. Pass: ${md(P.closePass)}. Stop: a chat will not open → note it as lost.</p>\n`+
+ chats.map(c=>tick(`<b>${esc(c.t)}</b> — ${esc(c.r)}`)).join('\n')+'\n'+
+ tick('When all are closed: in a new chat here, say <code>migrate the project to the best solution</code> again, then redo step 1 with the new zip.'));
+// 4 Claude.ai
+if(AI){const PI=(await rd(OUT+'/claude-ai/PROJECT-INSTRUCTIONS.md'))||fail('no PROJECT-INSTRUCTIONS.md — run 20-fill-kit');
+ const piBody=PI.replace(/^#[^\n]*\n+/,'').trim();
+ const smoke=((PI.match(/(?:^|\n)## Smoke test\s*\n([\s\S]*?)(?=\n## |\s*$)/)||[])[1]||'').trim();
+ const FM=(await rd(OUT+'/claude-ai/knowledge/00-FILE-MAP.md'))||fail('no knowledge/00-FILE-MAP.md — run 41-knowledge');
+ const nk=+((FM.match(/^FILES: (\d+)/m)||[])[1]||NaN);const have=(await lsn(OUT+'/claude-ai/knowledge')).length;
+ if(!(nk>0)||have!==nk)fail(`knowledge folder has ${have} files, 00-FILE-MAP.md says ${nk}`);
+ sec('Claude.ai Project',[
+  tick(`claude.ai → Projects → <b>Create project</b> → name it <code>${esc(P.short)}</code>.`),
+  tick('Project → <b>Set project instructions</b>. Tap the field below, copy, paste, Save.'),
+  field('instructions','Project instructions — paste into the instructions box',piBody,16),
+  tick(`Tap the <b>${esc(P.short)} — Claude.ai knowledge</b> download card in the chat and unzip it. Pass: one folder of ${nk} files.`),
+  tick(`Project knowledge → <b>+</b> → <b>Upload</b> → open that folder → <b>Select all</b> → upload. Pass: ${nk} files listed. Stop: a file is refused → send me its name.`),
+  `<p class="note">That folder holds only what belongs in knowledge — nothing to pick or skip. Knowledge has no folders, so each file's path is in its name (<code>laws__a.md</code> = <code>laws/a.md</code>); <code>00-FILE-MAP.md</code> lists them all. The same folder is <code>${esc(OUT)}/claude-ai/knowledge/</code> in the full backup.</p>`,
+  P.repo?tick(`Project → <b>Add content</b> → <b>GitHub</b> → <code>${esc(P.repo)}</code>, branch <code>${esc(P.branch)}</code>. Pass: the repo shows under knowledge.`):'',
+  tick('Smoke test, in a new chat inside the Project — '+md(smoke)+' Stop: otherwise, send me its reply.')].filter(Boolean).join('\n'));}
+// 5 Claude Code
+if(CODE){const SETUP=(await rd(OUT+'/claude-code/SETUP.md'))||fail('no SETUP.md — run 20-fill-kit');const blocks=[];
+ for(const m of SETUP.matchAll(/(?:^|\n)## (\d+)\. ([^\n]+)\n([\s\S]*?)(?=\n## |\s*$)/g)){const s=m[3];const code=(s.match(/```\n([\s\S]*?)\n```/)||[])[1];if(!code)continue;
+  const after=s.slice(s.indexOf('```',s.indexOf('```')+3)+3).trim();blocks.push({n:m[1],title:m[2],code,notes:after});}
+ if(blocks.length<5)fail('SETUP.md yielded '+blocks.length+' blocks');
+ sec('Claude Code (on a computer)',`<p class="note">Each field is one terminal paste, in order. Reference: <code>${esc(OUT)}/claude-code/SETUP.md</code>.</p>\n`+
+  blocks.map(b=>tick(`<b>${b.n}. ${esc(b.title)}</b> — paste the field below.`)+'\n'+field('setup'+b.n,`Block ${b.n} — ${esc(b.title)}`,b.code)+'\n<p class="note">'+b.notes.split('\n').map(l=>md(l.replace(/^- /,''))).join('<br>')+'</p>').join('\n')+'\n'+
+  tick('Pass for this step: <code>npm run check</code> prints <code>0 errors</code>.'));}
+// 6 Move (design systems only)
+if(AI&&P.isDS)sec('Official Move to Claude ⛔',`<p><b>This makes the original read-only forever.</b> Do it only after every step above passes.</p>\n`+[
+ tick('Precondition: both backup zips are saved (and the account export, if your plan allows it), and every chat in the close step is closed.'),
+ tick('Here: open the design system → <b>Check whether this design system can move to Claude</b> → <b>Check</b>. Pass: "Nothing found in the way". Stop: it names files → send me the list; I fix only those (from <code>MOVE-PREFLIGHT.md</code>), then Check again.'),
+ tick('claude.ai → Artifacts → "Claude Design lives here now" banner → <b>Move</b> (or the Design tile "…" menu). Keep the tab open. Pass: "Moved" with an Open link. Stop: "Didn\'t move" + a reason → Check again, then <b>Move again</b>.'),
+ tick('Settings → design systems. Pass: it is listed. Use it for new designs.'),
+ tick('Freeze: nobody edits this project in the old tool from now on.')].join('\n'),true);
+// 7 finish
+sec('Finish — delete nothing',[
+ P.repo?tick(`Open <code>${esc(P.dsFolder)}/</code> on GitHub (<code>${esc(P.repo)}</code>, branch <code>chore/${esc(P.slug)}-import</code> or <code>${esc(P.branch)}</code>). Pass: <code>${esc(OUT)}/START-HERE.md</code> is there.`):tick('Keep the backup zips in both places. Pass: you can open them from the computer.'),
+ tick(`Delete nothing in the old tool. It closes ${P.closes}.`)].join('\n'));
+const doc=`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Copy · Migrate ${esc(P.short)}</title>
+<style>
+:root{--copy-accent:${P.accent}}
+body{margin:0;padding:16px 14px 44px;background:#f4f1ea;color:#1a1815;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+h1{margin:0 0 3px;font-family:inherit;font-size:15px;font-weight:600;line-height:1.3;letter-spacing:.06em;text-transform:uppercase;color:#6b6558}
+h2{margin:24px 0 8px;padding-bottom:5px;font-family:inherit;font-size:13px;font-weight:700;line-height:1.3;letter-spacing:.05em;text-transform:uppercase;color:#1a1815;border-bottom:1px solid #d8d2c4}
+p,li{max-width:44em;overflow-wrap:anywhere}p{margin:0 0 14px}
+p.note{font-size:13px;color:#6b6558}
+label.lbl{display:block;margin:12px 0 4px;font-family:inherit;font-size:11px;font-weight:700;line-height:1.3;letter-spacing:.04em;text-transform:uppercase;color:#6b6558}
+label.tick{display:flex;gap:.55em;align-items:flex-start;margin:0 0 10px;font-size:14px;cursor:pointer}
+label.tick input{margin:.3em 0 0;min-width:20px;min-height:20px}
+textarea{width:100%;box-sizing:border-box;font:13px/1.45 ui-monospace,Menlo,monospace;padding:8px;border:1px solid #cfc8b8;border-radius:4px;background:#fff;color:#1a1815}
+.fence{border:2px solid #b3261e;border-radius:4px;padding:4px 12px 8px;margin:8px 0}
+a{color:#1a5fb4}a:hover{color:#123f78}code{font-size:13px}
+</style>
+</head>
+<body>
+<h1>Migrate ${esc(P.short)} — ${P.date}</h1>
+<p class="note">Do the steps in order. The tool closes ${P.closes}. ${DL(P.closes)}</p>
+${S.map((s,i)=>`<h2>${i+1} · ${esc(s.title)}</h2>\n${s.fence?'<div class="fence">\n'+s.body+'\n</div>':s.body}`).join('\n')}
+${engine}
+<script>
+(function(){var K='migrate-${P.slug}-${P.date}',s={};try{s=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){}
+document.querySelectorAll('[data-tick]').forEach(function(b){b.checked=!!s[b.dataset.tick];
+b.addEventListener('change',function(){s[b.dataset.tick]=b.checked;try{localStorage.setItem(K,JSON.stringify(s))}catch(e){}})})})();
+</script>
+</body>
+</html>
+`;
+// gate
+const g=[];const steps=(doc.match(/<h2\b/g)||[]).length,ticks=(doc.match(/data-tick=/g)||[]).length;
+if(ticks<steps)g.push(`ticks ${ticks} < steps ${steps}`);
+if(!/localStorage\.setItem/.test(doc))g.push('ticks not persisted');
+if(!/<script src="copy-all\.js"><\/script>|\/\* copy-all\.js \(inlined\) \*\//.test(doc))g.push('copy engine not loaded');
+if(!/color-scheme" content="light/.test(doc))g.push('no light colour-scheme');
+if(/word-break:\s*break-all/.test(doc))g.push('break-all on prose');
+const first=(doc.slice(doc.indexOf('<body>')).match(/href="([^"]+)"/)||[])[1]||'';if(/github\.com\/[^"]+\/blob\//.test(first))g.push('first link is a source file');
+if(/font:\s*(?:\d{3}\s+)?[\d.]+(?:px|rem|em)\s*\/\s*[\d.]+\s+inherit\b/.test(doc))g.push('invalid font shorthand');
+for(const [id,v] of PAY){const m=doc.match(new RegExp(`<textarea id="${id}"[^>]*>([\\s\\S]*?)</textarea>`));if(!m||unesc(m[1])!==v)g.push('payload '+id+' ≠ source');}
+if(new Set(PAY.map(p=>p[0])).size!==PAY.length)g.push('duplicate field ids');
+if(/\{\{\w+\}\}/.test(doc))g.push('unfilled placeholder');
+if(!chats.length)g.push('no chats inlined');
+if(g.length)fail('copy-doc gate: '+g.join(' | '));
+await saveFile(docPath,doc);
+log(`copy doc ${docPath} · steps ${steps} · ticks ${ticks} · payloads ${PAY.length} · chats ${chats.length} · engine ${linkEngine?'linked':'inlined'} · gate pass`);

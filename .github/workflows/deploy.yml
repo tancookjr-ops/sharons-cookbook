@@ -1,0 +1,29 @@
+name: Deploy production (emergency)
+
+# Adapted from BorealCodex's deploy.yml. MANUAL-ONLY: re-deploys whatever is on
+# `Production` right now, without promoting anything. Normal releases go through
+# "Promote staging → production" so staging is always the gate.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ftp:
+    uses: ./.github/workflows/ftp.yml
+    with:
+      target: production
+      ref: Production
+    secrets: inherit
+
+  pages:
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

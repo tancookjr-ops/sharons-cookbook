@@ -1,0 +1,42 @@
+/* ==================================================================
+   typography.css — type tokens.
+
+   Two families only: a platform UI sans for everything readable, and a
+   warm old-style serif for display (headings, brand, recipe titles,
+   numbered step markers). Stacks copied verbatim from css/app.css, with
+   Gelasio added before Georgia as a cross-platform display fallback
+   (see fonts.css).
+   ================================================================== */
+
+:root {
+  /* --- families --- */
+  --font-body:    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Gelasio", Georgia, "Times New Roman", serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* --- master scale knob --- */
+  /* Settings → font size multiplies this (0.9–1.3 in the product). */
+  --font-scale: 1;
+
+  /* --- type ramp (em-based, as used across the app) --- */
+  --text-h1:   1.9em;    /* page titles            */
+  --text-h2:   1.35em;   /* section / card titles  */
+  --text-h3:   1.1em;    /* sub-sections           */
+  --text-body: 1rem;     /* body copy              */
+  --text-sm:   0.9em;    /* labels, meta           */
+  --text-xs:   0.78em;   /* chips, captions        */
+
+  /* --- weights --- */
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* --- line heights --- */
+  --leading-tight: 1.2;   /* headings          */
+  --leading-body:  1.55;  /* body              */
+
+  /* --- tracking --- */
+  --tracking-heading: 0.01em;
+  --tracking-caps:    0.06em;   /* uppercase eyebrow labels */
+}
