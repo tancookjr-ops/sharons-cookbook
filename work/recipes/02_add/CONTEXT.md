@@ -14,8 +14,11 @@ Do NOT load: other recipe files, app code, drafts still marked `draft`.
 2. Run `node scripts/check-recipes.mjs`: it must print `0 errors`, and the count for
    the target file must have gone up by one. Read any `warn` lines (possible
    non-vegan words). The staging deploy runs the same check and stops on an error.
-3. Delete the draft from `../01_draft/output/` (its home is now `recipes/`).
-4. Commit on a branch, open a pull request into `Develop`. Merging it deploys staging.
+3. Run `scripts/sync-mirrors.sh` — it copies the changed file into the design-system
+   mirrors (the staging deploy refuses drift).
+4. Delete the draft from `../01_draft/output/` (its home is now `recipes/`).
+5. Commit on a `claude/<topic>` branch as `feat(recipes): add <title>`, open a pull
+   request into `Develop`. Merging it deploys staging.
 
 ## Outputs
 - the changed `recipes/<file>.js` on `Develop` → hands off to `work/release/01_staging`

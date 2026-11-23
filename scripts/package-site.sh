@@ -30,9 +30,10 @@ shopt -s nullglob
 for f in "$SRC"/index.html "$SRC"/manifest.webmanifest "$SRC"/*.css "$SRC"/*.js "$SRC"/*.jsx; do
   cp "$f" "$OUT/"
 done
-for d in tokens recipes icons images; do
+for d in tokens icons images; do
   [ -d "$SRC/$d" ] && cp -R "$SRC/$d" "$OUT/"
 done
+mkdir -p "$OUT/recipes" && cp "$SRC"/recipes/*.js "$OUT/recipes/"   # code only — not recipes/CONTEXT.md
 rm -f "$OUT/images/.gitkeep"
 
 # Every file the app shell and service worker ask for must exist.

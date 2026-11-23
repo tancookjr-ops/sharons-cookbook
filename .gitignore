@@ -8,3 +8,8 @@ package-lock.json
 .DS_Store
 Thumbs.db
 *.log
+
+# The design-system tools DO commit their manifest + lockfile (supply-chain rule:
+# installs are reproducible with `npm ci --ignore-scripts`). See _shared/rules.md.
+!design-system/tools/package.json
+!design-system/tools/package-lock.json
