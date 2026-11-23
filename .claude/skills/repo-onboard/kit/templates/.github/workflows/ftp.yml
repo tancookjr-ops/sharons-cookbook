@@ -1,0 +1,78 @@
+name: Upload to FTP server
+
+# Installed by repo-onboard.
+
+# Packages one branch and uploads it to the FTP server — the eventual primary
+# host. Until the FTP secrets exist this SKIPS cleanly (green, with a note in the
+# run summary) and GitHub Pages (pages.yml) is the host.
+#
+# Repository secrets (Settings → Secrets and variables → Actions):
+#   FTP_HOST               server name, e.g. ftp.example.com       (required)
+#   FTP_USER               login                                   (required)
+#   FTP_PASSWORD           password                                (required)
+#   FTP_PRODUCTION_DIR     remote folder for the live site         (required for production)
+#   FTP_STAGING_DIR        remote folder for staging               (required for staging)
+#   FTP_PROTOCOL           ftps (default) · sftp · ftp             (optional)
+#   FTP_PORT               only if not the protocol's default      (optional)
+#
+# Uploads never delete files on the server (anything else you keep there is safe).
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: production or staging
+        required: true
+        type: string
+      ref:
+        description: branch or commit to package
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_PROTOCOL: ${{ secrets.FTP_PROTOCOL }}
+      FTP_PORT: ${{ secrets.FTP_PORT }}
+      FTP_DIR: ${{ inputs.target == 'production' && secrets.FTP_PRODUCTION_DIR || secrets.FTP_STAGING_DIR }}
+    steps:
+      - name: Is an FTP server configured?
+        id: cfg
+        run: |
+          if [ -z "$FTP_HOST" ] || [ -z "$FTP_USER" ] || [ -z "$LFTP_PASSWORD" ] || [ -z "$FTP_DIR" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "### FTP (${{ inputs.target }}): skipped — no FTP server configured yet. GitHub Pages is hosting." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.cfg.outputs.ready == 'true'
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Package
+        if: steps.cfg.outputs.ready == 'true'
+        run: bash scripts/package-site.sh . _site "${{ inputs.target }}"
+
+      - name: Upload
+        if: steps.cfg.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          PROTO="${FTP_PROTOCOL:-ftps}"
+          case "$PROTO" in
+            ftps) URL="ftp://$FTP_HOST"; TLS="set ftp:ssl-force true; set ftp:ssl-protect-data true;" ;;
+            ftp)  URL="ftp://$FTP_HOST"; TLS="set ftp:ssl-allow false;" ;;
+            sftp) URL="sftp://$FTP_HOST"; TLS="set sftp:auto-confirm yes;" ;;
+            *) echo "✖ FTP_PROTOCOL must be ftps, sftp or ftp"; exit 1 ;;
+          esac
+          [ -n "$FTP_PORT" ] && URL="$URL:$FTP_PORT"
+          lftp --env-password -u "$FTP_USER" "$URL" -e "$TLS set net:max-retries 3; mirror --reverse --verbose --parallel=4 _site/ '$FTP_DIR'; bye"
+          echo "### FTP (${{ inputs.target }}): uploaded \`$(git rev-parse --short HEAD)\` to $FTP_DIR" >> "$GITHUB_STEP_SUMMARY"

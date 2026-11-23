@@ -1,0 +1,67 @@
+name: Promote staging → production
+
+# Adapted from BorealCodex's promote.yml. THE one-click release (the release check is you
+# pressing this button after checking staging).
+# Fast-forwards `[[branches.production]]` to the tested `[[branches.staging]]` tip, then deploys production
+# in this same run (a push made with GITHUB_TOKEN does not trigger other workflows).
+#
+# Safety: promotes ONLY if [[branches.production]] is an ancestor of [[branches.staging]] (a clean
+# fast-forward). If a hotfix went straight to [[branches.production]], this fails and tells you
+# to merge [[branches.production]] into [[branches.staging]] first — so production never silently loses a commit.
+on:
+  workflow_dispatch:
+
+# Shares the production lock so it never runs at the same time as deploy.yml.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # push the fast-forward to [[branches.production]]
+    outputs:
+      sha: ${{ steps.ff.outputs.sha }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: [[branches.staging]]
+          fetch-depth: 0
+
+      - name: Fast-forward [[branches.production]] → [[branches.staging]]
+        id: ff
+        run: |
+          git fetch origin [[branches.production]] [[branches.staging]]
+          if ! git merge-base --is-ancestor origin/[[branches.production]] origin/[[branches.staging]]; then
+            echo "✖ [[branches.production]] has commits that are not on [[branches.staging]]."
+            echo "  Merge [[branches.production]] into [[branches.staging]] first (so [[branches.staging]] is ahead), then re-run promote."
+            exit 1
+          fi
+          if [ "$(git rev-parse origin/[[branches.production]])" = "$(git rev-parse origin/[[branches.staging]])" ]; then
+            echo "▶ [[branches.production]] already equals [[branches.staging]] — re-deploying current [[branches.production]]."
+          else
+            echo "▶ Fast-forwarding [[branches.production]] → [[branches.staging]] tip…"
+            git push origin origin/[[branches.staging]]:refs/heads/[[branches.production]]
+          fi
+          echo "sha=$(git rev-parse origin/[[branches.staging]])" >> "$GITHUB_OUTPUT"
+          echo "### Promoted \`$(git rev-parse --short origin/[[branches.staging]])\` to [[branches.production]]" >> "$GITHUB_STEP_SUMMARY"
+
+  ftp:
+    needs: promote
+    uses: ./.github/workflows/ftp.yml
+    with:
+      target: production
+      ref: ${{ needs.promote.outputs.sha }}
+    secrets: inherit
+
+  pages:
+    needs: promote
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

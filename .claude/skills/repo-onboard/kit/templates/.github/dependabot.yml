@@ -1,0 +1,18 @@
+# Installed by repo-onboard (adapted from BorealCodex). Grouped update pull requests
+# into [[branches.staging]] with a 7-day cooldown, so a freshly published (possibly
+# poisoned) version is never adopted the day it appears.
+# Needs Dependabot turned on: Settings → Code security → Dependabot version updates.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "[[branches.staging]]"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns: ["*"]
+[[@dependabot_npm]]

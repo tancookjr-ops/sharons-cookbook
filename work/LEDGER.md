@@ -3,6 +3,17 @@
 Append-only. One entry per "handoff" (see `_shared/working-practices.md`).
 Status is never stored here — it is read from the files (`CONTEXT.md` → Status).
 
+## 2026-11-23 — repo-onboard patch
+
+**Changed**
+- `.claude/skills/repo-onboard/`: a reusable patch that installs this whole setup on another
+  repo — intake rounds (AskUserQuestion), inventory, renderer, verify against real branches,
+  design-backup import with the known fixes, one PR, auto-merge, deploy watch, fix loop.
+- Dry-run on a pristine copy of this repo: staging package byte-identical to the hand-built one.
+
+**Waiting on the owner**
+- Decide where the patch should live for other repos (its own repo is best).
+
 ## 2026-11-23 — workspace, deploys, rules
 
 **Changed**
