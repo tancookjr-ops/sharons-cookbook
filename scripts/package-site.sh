@@ -43,7 +43,14 @@ done
 for ref in $(grep -o '"src": *"[^"]*"' "$OUT/manifest.webmanifest" | sed 's/.*"\([^"]*\)"$/\1/'); do
   [ -e "$OUT/$ref" ] || { echo "✖ manifest lists $ref but it is not in the package"; missing=1; }
 done
-[ "$missing" = 0 ] || exit 1
+# Staging is the gate: a missing file stops it. Production only warns — it is
+# republishing what is already live, and refusing would also block staging,
+# which is published in the same Pages run.
+if [ "$missing" != 0 ]; then
+  if [ "$MODE" = staging ]; then exit 1; fi
+  echo "⚠ production has the missing files above — fix them on Develop and promote" >&2
+  [ -n "${GITHUB_STEP_SUMMARY:-}" ] && echo "⚠ Production is missing files the app asks for (see the Package step log)." >> "$GITHUB_STEP_SUMMARY"
+fi
 
 if [ "$MODE" = staging ]; then
   for f in "$OUT"/*.js "$OUT"/*.jsx; do
