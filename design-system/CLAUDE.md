@@ -38,4 +38,4 @@ Run them from `tools/`; they treat the parent folder as the project root.
 looked at. Console errors 0. Report the commands and their output lines.
 
 ## Invariants
-(No invariants section was found in CLAUDE.md or readme.md. Ask the owner for the brand rules before designing anything.)
+None yet. The owner confirmed on 2026-11-23 that no brand rules exist. Follow the existing tokens and guidelines; propose any new rule to the owner before relying on it, and record it here once agreed.
