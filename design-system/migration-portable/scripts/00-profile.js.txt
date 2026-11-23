@@ -1,0 +1,76 @@
+// Phase −1 · detect this project → <OUT>/PROFILE.json
+// ARGS: {title, repoPrivate:true|false, dsFolder, target:'best'|'ai'|'code'}
+const P={date:new Date().toISOString().slice(0,10),closes:'2026-12-14',target:ARGS.target||'best',out:OUT,kit:KIT};
+const readme=(await rd('readme.md'))??(await rd('README.md'))??'';
+const claude=(await rd('CLAUDE.md'))??'';
+const h1=s=>((s.match(/^#\s+(.+)$/m)||[])[1]||'').replace(/\s+[—–]\s.*$/,'').replace(/\s*\([^)]*\)\s*$/,'').trim();
+P.name=String(ARGS.title||h1(readme)||h1(claude)||'Project').trim();
+P.short=P.name.replace(/^The\s+/i,'').replace(/\s+Design System$/i,'').trim()||P.name;
+P.slug=P.short.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'project';
+const words=P.short.split(/\s+/).filter(x=>/^[A-Za-z0-9]/.test(x)&&!/^(of|the|and|de|la|le)$/i.test(x));
+P.initials=(words.length>1?words[0][0]+words[1][0]:(words[0]||P.short).slice(0,2)).toUpperCase();
+
+// global stylesheet closure (post-order: imports before the importer)
+P.cssEntry=null;for(const e of ['styles.css','index.css','globals.css','global.css','main.css','theme.css','tokens.css'])if((await rd(e))!=null){P.cssEntry=e;break;}
+P.cssFiles=[];const seenCss=new Set();
+const walkCss=async rel=>{if(seenCss.has(rel))return;seenCss.add(rel);const t=await rd(rel);if(t==null)return;
+ for(const m of t.matchAll(/@import\s+(?:url\(\s*)?["']?([^"')\s;]+)["']?\s*\)?[^;]*;/g)){if(/^(https?:)?\/\//.test(m[1]))continue;await walkCss(norm(dirOf(rel)+m[1]));}
+ P.cssFiles.push(rel);};
+if(P.cssEntry)await walkCss(P.cssEntry);
+
+// accent: a brand-ish custom property first, else the most saturated hex
+let css='';for(const f of P.cssFiles)css+=(await rd(f))+'\n';
+const hex6=h=>h.length===4?'#'+[...h.slice(1)].map(c=>c+c).join(''):h;
+const rgb=h=>{h=hex6(h);return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255)};
+const sat=h=>{const [r,g,b]=rgb(h);const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;return mx===mn?0:(mx-mn)/(1-Math.abs(2*l-1))*(1-Math.abs(l-0.5))};
+const vars=[...css.matchAll(/--([\w-]+)\s*:\s*(#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b)/g)].map(m=>({k:m[1].toLowerCase(),v:m[2]}));
+let acc=null;P.accentSource='fallback';
+for(const p of ['primary','brand','accent','action','cta']){const hit=vars.find(x=>x.k.includes(p)&&!/(ink|text|fg|on-|bg|surface|light|tint|soft|muted|subtle|hover|active|-50|-100|-200)/.test(x.k));if(hit){acc=hit.v;P.accentSource='--'+hit.k;break;}}
+if(!acc&&vars.length){const s=vars.slice().sort((a,b)=>sat(b.v)-sat(a.v))[0];acc=s.v;P.accentSource='most saturated: --'+s.k;}
+P.accent=hex6(acc||'#333333').toUpperCase();
+const lum=h=>{const c=rgb(h).map(v=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4));return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]};
+const con=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05)};
+P.accentInk=con(P.accent,'#FFFFFF')>=con(P.accent,'#1A1A1A')?'#FFFFFF':'#1A1A1A';
+
+// component bundle
+const b=await rd('_ds_bundle.js');
+P.isDS=!!b;P.ns=null;P.components=[];P.componentMap={};P.componentSources=[];
+if(b){const i=b.indexOf('@ds-bundle:');let hd=null;if(i>=0){try{hd=JSON.parse(b.slice(i+11,b.indexOf('*/',i)).trim())}catch(e){}}
+ P.ns=(hd&&hd.namespace)||(b.match(/window\.(\w+)\s*=\s*window\.\1\s*\|\|/)||[])[1]||null;
+ if(hd&&Array.isArray(hd.components))for(const c of hd.components){P.components.push(c.name);if(c.sourcePath)P.componentMap[c.name]=c.sourcePath;}
+ P.componentSources=[...new Set(Object.values(P.componentMap))];}
+
+// continuity + laws
+P.has={};
+for(const [k,p] of Object.entries({state:'STATE.md',archive:'STATE-ARCHIVE.md',threads:'THREADS.md',jobs:'JOBS.md',github:'github.md',map:'MAP.md',claude:'CLAUDE.md',copyDocsLaw:'laws/copy-docs.md',sessionsLaw:'laws/sessions.md',questionsLaw:'laws/questions.md',copyAll:'assets/copy/copy-all.js',ownLaw:'laws/migrate.md'}))P.has[k]=(await rd(p))!=null;
+P.has.copyDir=(await lsn('assets/copy')).length>0;
+P.has.ownKit=(await lsn('migration/kit')).length>0;
+const state=P.has.state?await rd('STATE.md'):'';
+P.has.ledger=/^##\s+Conversation Ledger/m.test(state);
+P.has.verbs=/\bpickup\b/.test(claude)&&/\bclose\b/i.test(claude);
+P.closePhrase=P.has.verbs?"ok Claude, let's close and exit this chat":'Write a short summary of this chat (decisions, open items, files changed) at the top of CHAT-SUMMARIES.md in the project root.';
+P.closePass=P.has.verbs?'the reply ends with **This Chat (…) Is Now Closed**':'`CHAT-SUMMARIES.md` shows the new section';
+
+// invariants, verbatim
+const sect=(s,re)=>{const m=s.match(re);if(!m)return null;const i=m.index+m[0].length;const j=s.slice(i).search(/\n##\s/);return {title:m[1].trim(),body:s.slice(i,j<0?undefined:i+j).trim()}};
+let iv=sect(claude,/^##\s+([^\n]*invariant[^\n]*)\n/im),src='CLAUDE.md';
+if(!iv){iv=sect(readme,/^##\s+([^\n]*(?:brand|rules|non-negotiable|principles)[^\n]*)\n/im);src='readme.md';}
+P.invariants=iv?iv.body:'';P.invariantsSource=iv?`${src} § ${iv.title}`:'(none found)';
+
+// repo
+const gh=P.has.github?await rd('github.md'):'';const kv=k=>((gh.match(new RegExp('^'+k+':[ \\t]*(\\S.*)$','m'))||[])[1]||'').trim()||null;
+P.repo=kv('repo');P.branch=kv('branch')||(P.repo?'main':null);P.repoPath=kv('path');
+P.repoPrivate=P.repo?(typeof ARGS.repoPrivate==='boolean'?ARGS.repoPrivate:null):null;
+P.dsFolder=ARGS.dsFolder||'design-system';
+P.starter=P.slug+'-starter.html';
+
+await saveFile(OUT+'/PROFILE.json',JSON.stringify(P,null,2)+'\n');
+log(`PROFILE · ${P.name} (${P.short}, ${P.initials}, ${P.slug}) · target ${P.target}`);
+log(`DS: ${P.isDS?`${P.ns} · ${P.components.length} components (${P.componentSources.length} source files)`:'no _ds_bundle.js → project mode: DS-only parts not applicable'}`);
+log(`css: ${P.cssEntry||'none'} (${P.cssFiles.length} files) · accent ${P.accent} (${P.accentSource}) ink ${P.accentInk}`);
+log(`repo: ${P.repo?`${P.repo} @${P.branch}${P.repoPath?' path '+P.repoPath:''} · private=${P.repoPrivate} · folder ${P.dsFolder}`:'none'}`);
+log('has: '+Object.entries(P.has).filter(([k,v])=>v).map(([k])=>k).join(', '));
+log('invariants: '+P.invariantsSource+(P.invariants?` (${P.invariants.split('\n').length} lines)`:''));
+if(P.has.ownLaw&&P.has.ownKit)log('⚠ this project has its own laws/migrate.md + migration/kit — use those, not this kit');
+if(P.repo&&P.repoPrivate==null)log('⚠ repo privacy unknown — treated as PUBLIC (stricter EXCLUDE). Pass repoPrivate from github_list_repos.');
+if(!ARGS.title)log('⚠ no title passed — name guessed from readme/CLAUDE.md headings');

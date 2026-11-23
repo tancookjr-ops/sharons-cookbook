@@ -1,0 +1,16 @@
+// _lib — prepended to every script by the loader. Do not declare these names again in a script.
+const OUT=String(ARGS.out||'MIGRATE').replace(/\/+$/,''), KIT=String(ARGS.kit||'migration-portable').replace(/\/+$/,'');
+const rd=async p=>{try{return await readFile(p)}catch(e){return null}};
+const rdJSON=async p=>{const t=await rd(p);return t==null?null:JSON.parse(t)};
+const size=async p=>{try{return (await readFileBinary(p)).size}catch(e){return null}};
+const lsn=async p=>{try{return await ls(p)}catch(e){return []}};
+const fmt=b=>b==null?'not measured':b>=1048576?(b/1048576).toFixed(2)+' MB':b>=1024?(b/1024).toFixed(1)+' KB':b+' B';
+const escH=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const escRe=s=>String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const dirOf=p=>p.includes('/')?p.slice(0,p.lastIndexOf('/')+1):'';
+const norm=p=>{const o=[];for(const s of p.split('/')){if(s===''||s==='.')continue;if(s==='..')o.pop();else o.push(s);}return o.join('/')};
+const DL=d=>`Chats and comments are deleted after ${d}. Close every chat before then.`;
+const SAFE=/^[A-Za-z0-9 ._\/-]+$/;
+const fail=m=>{throw new Error('GATE FAIL — '+m)};
+const loadP=async()=>{const p=await rdJSON(OUT+'/PROFILE.json');if(!p)fail('no '+OUT+'/PROFILE.json — run 00-profile first');return p};
+const loadInv=async()=>{const i=await rdJSON(OUT+'/INVENTORY.json');if(!i)fail('no '+OUT+'/INVENTORY.json — run 10-inventory until DONE');return i};

@@ -1,0 +1,569 @@
+/* @ds-bundle: {"format":4,"namespace":"SharonSCookbookDesignSystem_c765c0","components":[{"name":"Logo","sourcePath":"components/brand/Logo.jsx"},{"name":"RecipeCard","sourcePath":"components/content/RecipeCard.jsx"},{"name":"Button","sourcePath":"components/controls/Button.jsx"},{"name":"IconButton","sourcePath":"components/controls/IconButton.jsx"},{"name":"SegmentedControl","sourcePath":"components/controls/SegmentedControl.jsx"},{"name":"AlertPill","sourcePath":"components/feedback/AlertPill.jsx"},{"name":"Chip","sourcePath":"components/feedback/Chip.jsx"},{"name":"EmptyState","sourcePath":"components/feedback/EmptyState.jsx"},{"name":"Toast","sourcePath":"components/feedback/Toast.jsx"},{"name":"Checkbox","sourcePath":"components/forms/Checkbox.jsx"},{"name":"Field","sourcePath":"components/forms/Field.jsx"},{"name":"Input","sourcePath":"components/forms/Input.jsx"},{"name":"Select","sourcePath":"components/forms/Select.jsx"},{"name":"Textarea","sourcePath":"components/forms/Textarea.jsx"},{"name":"Card","sourcePath":"components/surfaces/Card.jsx"},{"name":"Dialog","sourcePath":"components/surfaces/Dialog.jsx"}],"sourceHashes":{"components/brand/Logo.jsx":"8183795643d1","components/content/RecipeCard.jsx":"c01bbf9fb771","components/controls/Button.jsx":"ee007bf9ceaf","components/controls/IconButton.jsx":"a028a02148e4","components/controls/SegmentedControl.jsx":"3306dae48179","components/feedback/AlertPill.jsx":"cbd47d30654c","components/feedback/Chip.jsx":"9fbc99b035bd","components/feedback/EmptyState.jsx":"6c57d14baf9a","components/feedback/Toast.jsx":"b519e4ea7195","components/forms/Checkbox.jsx":"2de0f4035368","components/forms/Field.jsx":"53389e180c5e","components/forms/Input.jsx":"87ce3ac3fb21","components/forms/Select.jsx":"cde615e6e2c6","components/forms/Textarea.jsx":"7603346f1f12","components/surfaces/Card.jsx":"7331dd7c0bd4","components/surfaces/Dialog.jsx":"d9542b0476d4","deploy/app.jsx":"f4c19ddc65d9","deploy/auth.js":"26e36439bab2","deploy/data.js":"f8457a6717ae","deploy/import-parse.js":"02dbba448b4e","deploy/import-web.js":"252701b2b9dc","deploy/recipes/breakfast.js":"51118ecca8df","deploy/recipes/build.js":"199faf5013e7","deploy/recipes/drinks.js":"832269fa0d1f","deploy/recipes/mains.js":"4baeeb52d3b2","deploy/recipes/salads.js":"3ce0d9aae0fb","deploy/recipes/sauces-preserves.js":"7f4c69535a6d","deploy/recipes/sides-breads.js":"96b563957338","deploy/recipes/snacks-desserts.js":"8afd7c37d703","deploy/recipes/soups.js":"d0d8efd8b4f3","deploy/screens-main.jsx":"24cc1e201efe","deploy/screens-more.jsx":"ead795db7466","deploy/sw.js":"8a445ba1169e","deploy/units.js":"7baaa5aebf07","ui_kits/cookbook/app.jsx":"f4c19ddc65d9","ui_kits/cookbook/auth.js":"26e36439bab2","ui_kits/cookbook/data.js":"f8457a6717ae","ui_kits/cookbook/import-parse.js":"02dbba448b4e","ui_kits/cookbook/import-web.js":"252701b2b9dc","ui_kits/cookbook/recipes/breakfast.js":"51118ecca8df","ui_kits/cookbook/recipes/build.js":"199faf5013e7","ui_kits/cookbook/recipes/drinks.js":"832269fa0d1f","ui_kits/cookbook/recipes/mains.js":"4baeeb52d3b2","ui_kits/cookbook/recipes/salads.js":"3ce0d9aae0fb","ui_kits/cookbook/recipes/sauces-preserves.js":"7f4c69535a6d","ui_kits/cookbook/recipes/sides-breads.js":"96b563957338","ui_kits/cookbook/recipes/snacks-desserts.js":"8afd7c37d703","ui_kits/cookbook/recipes/soups.js":"d0d8efd8b4f3","ui_kits/cookbook/screens-main.jsx":"24cc1e201efe","ui_kits/cookbook/screens-more.jsx":"ead795db7466","ui_kits/cookbook/units.js":"7baaa5aebf07","upload-v1.2.3/import-parse.js":"da3ebcc5746f","upload-v1.2.3/import-web.js":"20db3459d348","upload-v1.2.3/screens-more.jsx":"08c077f63855","upload-v1.2.3/sw.js":"0cd800a62050","upload-v1.2.4/import-web.js":"6dfe1fc2b550","upload-v1.2.4/screens-more.jsx":"ce2d79d8dd67","upload-v1.2.4/sw.js":"4b2e0bb81244","upload-v1.2.5/import-web.js":"5003bce996ce","upload-v1.2.5/screens-main.jsx":"3533fcb3e440","upload-v1.2.5/sw.js":"df58d229daad","upload-v1.2.6/import-parse.js":"02dbba448b4e","upload-v1.2.6/import-web.js":"64cc4f221677","upload-v1.2.6/sw.js":"644e1f21b1a6","upload-v1.2.7/import-web.js":"252701b2b9dc","upload-v1.2.7/screens-main.jsx":"5af5f74e1997","upload-v1.2.7/sw.js":"5a77ed738fde","upload-v1.2.8/app.jsx":"f4c19ddc65d9","upload-v1.2.8/screens-main.jsx":"24cc1e201efe","upload-v1.2.8/screens-more.jsx":"ead795db7466","upload-v1.2.8/sw.js":"8a445ba1169e"},"inlinedExternals":[],"unexposedExports":[]} */
+
+(() => {
+
+const __ds_ns = (window.SharonSCookbookDesignSystem_c765c0 = window.SharonSCookbookDesignSystem_c765c0 || {});
+
+const __ds_scope = {};
+
+(__ds_ns.__errors = __ds_ns.__errors || []);
+
+// components/brand/Logo.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Logo — the Sharon's Cookbook brand lock-up.
+ *
+ * The mark is the app's own herb-leaf SVG (a sage leaf with a cream
+ * midrib + veins), reproduced verbatim from index.html. `variant="full"`
+ * adds the wordmark in the display serif. Colours come from the tokens, so
+ * the mark adapts to light/dark automatically.
+ */
+function Logo({
+  variant = 'full',
+  size = 28,
+  className = '',
+  ...rest
+}) {
+  const cls = ['brand', className].filter(Boolean).join(' ');
+  const mark = /*#__PURE__*/React.createElement("svg", {
+    className: "brand-mark",
+    viewBox: "0 0 24 24",
+    width: size,
+    height: size,
+    "aria-hidden": "true",
+    style: {
+      width: size,
+      height: size
+    }
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M12 21c-4.5 0-8-3-8-8 0-6 5-10 8-11 3 1 8 5 8 11 0 5-3.5 8-8 8Z",
+    fill: "var(--primary)"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 4v15",
+    stroke: "var(--cream)",
+    strokeWidth: "1.4",
+    strokeLinecap: "round"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 9c1.6-.4 3-1.6 3.6-3.2M12 13c-1.8-.4-3.4-1.8-4-3.6",
+    stroke: "var(--cream)",
+    strokeWidth: "1.4",
+    strokeLinecap: "round",
+    fill: "none"
+  }));
+  if (variant === 'mark') {
+    return /*#__PURE__*/React.createElement("span", _extends({
+      className: cls,
+      "aria-label": "Sharon's Cookbook"
+    }, rest), mark);
+  }
+  return /*#__PURE__*/React.createElement("span", _extends({
+    className: cls
+  }, rest), mark, /*#__PURE__*/React.createElement("span", {
+    className: "brand-name"
+  }, "Sharon's Cookbook"));
+}
+Object.assign(__ds_scope, { Logo });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/brand/Logo.jsx", error: String((e && e.message) || e) }); }
+
+// components/content/RecipeCard.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * RecipeCard — the cookbook's signature tile.
+ *
+ * Reproduces the app's shared recipe card (recipes.js → recipeCardHTML):
+ * a 16:10 photo (or a gradient placeholder showing the title's first
+ * letter in the display serif), then title with an optional favourite
+ * star, subtitle, and a category · time · difficulty meta line. Lifts on
+ * hover. Pass a `recipe` object.
+ */
+function RecipeCard({
+  recipe,
+  href = '#',
+  className = '',
+  ...rest
+}) {
+  const r = recipe || {};
+  const cls = ['recipe-card', className].filter(Boolean).join(' ');
+  const firstLetter = (r.title || '?').trim().charAt(0).toUpperCase() || '?';
+  return /*#__PURE__*/React.createElement("a", _extends({
+    className: cls,
+    href: href
+  }, rest), r.photo ? /*#__PURE__*/React.createElement("img", {
+    className: "recipe-card-img",
+    src: r.photo,
+    alt: "",
+    loading: "lazy"
+  }) : /*#__PURE__*/React.createElement("div", {
+    className: "recipe-card-img recipe-card-placeholder",
+    "aria-hidden": "true"
+  }, firstLetter), /*#__PURE__*/React.createElement("div", {
+    className: "recipe-card-body"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "recipe-card-title"
+  }, r.title, r.favourite ? /*#__PURE__*/React.createElement("span", {
+    className: "fav-star",
+    "aria-label": "favourite"
+  }, " \u2605") : null), r.subtitle ? /*#__PURE__*/React.createElement("p", {
+    className: "recipe-card-sub"
+  }, r.subtitle) : null, /*#__PURE__*/React.createElement("p", {
+    className: "recipe-card-meta"
+  }, r.category ? /*#__PURE__*/React.createElement("span", null, r.category) : null, r.totalMinutes ? /*#__PURE__*/React.createElement("span", null, "\xB7 ", r.totalMinutes, " min") : null, r.difficulty ? /*#__PURE__*/React.createElement("span", null, "\xB7 ", r.difficulty) : null)));
+}
+Object.assign(__ds_scope, { RecipeCard });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/content/RecipeCard.jsx", error: String((e && e.message) || e) }); }
+
+// components/controls/Button.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Button — the primary action control.
+ *
+ * A pill-shaped button (border-radius: 999px) in four brand variants and
+ * three sizes. Renders an <a> when `href` is set, otherwise a <button>.
+ * Thin wrapper over the `.btn` classes in components.css.
+ */
+function Button({
+  variant = 'primary',
+  size = 'md',
+  href,
+  icon,
+  disabled = false,
+  className = '',
+  children,
+  ...rest
+}) {
+  const variantClass = {
+    primary: 'btn-primary',
+    ghost: 'btn-ghost',
+    danger: 'btn-danger',
+    'danger-ghost': 'btn-danger-ghost'
+  }[variant] || 'btn-primary';
+  const sizeClass = size === 'sm' ? 'btn-sm' : size === 'lg' ? 'btn-lg' : '';
+  const cls = ['btn', variantClass, sizeClass, className].filter(Boolean).join(' ');
+  const inner = /*#__PURE__*/React.createElement(React.Fragment, null, icon ? /*#__PURE__*/React.createElement("span", {
+    className: "btn-icon",
+    "aria-hidden": "true"
+  }, icon) : null, children);
+  if (href && !disabled) {
+    return /*#__PURE__*/React.createElement("a", _extends({
+      className: cls,
+      href: href
+    }, rest), inner);
+  }
+  return /*#__PURE__*/React.createElement("button", _extends({
+    className: cls,
+    disabled: disabled
+  }, rest), inner);
+}
+Object.assign(__ds_scope, { Button });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/controls/Button.jsx", error: String((e && e.message) || e) }); }
+
+// components/controls/IconButton.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * IconButton — a borderless, circular button for a single glyph or SVG.
+ *
+ * Used for topbar affordances (menu, theme), row actions and the ± steppers
+ * on the recipe scaler. Wrapper over `.icon-btn` in components.css. Always
+ * pass an accessible `aria-label` since the content is icon-only.
+ */
+function IconButton({
+  label,
+  className = '',
+  children,
+  ...rest
+}) {
+  const cls = ['icon-btn', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("button", _extends({
+    className: cls,
+    "aria-label": label,
+    title: rest.title || label
+  }, rest), children);
+}
+Object.assign(__ds_scope, { IconButton });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/controls/IconButton.jsx", error: String((e && e.message) || e) }); }
+
+// components/controls/SegmentedControl.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * SegmentedControl — a pill-shaped set of mutually-exclusive options.
+ *
+ * The app uses it for planner day/week/month, pantry locations and garden
+ * tabs. Wrapper over `.seg` / `.seg-btn` in components.css. Each option is
+ * `{ value, label, hint? }`; the active option gets a raised white pill.
+ */
+function SegmentedControl({
+  options = [],
+  value,
+  onChange,
+  className = '',
+  ...rest
+}) {
+  const cls = ['seg', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("div", _extends({
+    className: cls,
+    role: "tablist"
+  }, rest), options.map(opt => {
+    const active = opt.value === value;
+    return /*#__PURE__*/React.createElement("button", {
+      key: opt.value,
+      type: "button",
+      role: "tab",
+      "aria-selected": active,
+      className: active ? 'seg-btn active' : 'seg-btn',
+      onClick: () => onChange && onChange(opt.value)
+    }, opt.label, opt.hint ? /*#__PURE__*/React.createElement("small", null, " ", opt.hint) : null);
+  }));
+}
+Object.assign(__ds_scope, { SegmentedControl });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/controls/SegmentedControl.jsx", error: String((e && e.message) || e) }); }
+
+// components/feedback/AlertPill.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * AlertPill — a pill-shaped status badge for inline alert strips.
+ *
+ * Used on the pantry/dashboard alert rows. Wrapper over `.alert-pill`
+ * with a tone class. Group several inside an `.alert-strip` flex row.
+ */
+function AlertPill({
+  tone = 'info',
+  className = '',
+  children,
+  ...rest
+}) {
+  const toneClass = {
+    danger: 'alert-danger',
+    warn: 'alert-warn',
+    info: 'alert-info'
+  }[tone] || 'alert-info';
+  const cls = ['alert-pill', toneClass, className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("span", _extends({
+    className: cls
+  }, rest), children);
+}
+Object.assign(__ds_scope, { AlertPill });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/feedback/AlertPill.jsx", error: String((e && e.message) || e) }); }
+
+// components/feedback/Chip.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Chip — a small rounded label for tags, categories and metadata.
+ *
+ * Wrapper over `.chip` in components.css. `variant` picks the tone;
+ * `size="sm"` is the compact `.chip-sm`.
+ */
+function Chip({
+  variant = 'default',
+  size,
+  className = '',
+  children,
+  ...rest
+}) {
+  const variantClass = {
+    default: '',
+    tag: 'chip-tag',
+    danger: 'chip-danger',
+    warn: 'chip-warn',
+    info: 'chip-info'
+  }[variant] || '';
+  const cls = ['chip', variantClass, size === 'sm' ? 'chip-sm' : '', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("span", _extends({
+    className: cls
+  }, rest), children);
+}
+Object.assign(__ds_scope, { Chip });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/feedback/Chip.jsx", error: String((e && e.message) || e) }); }
+
+// components/feedback/EmptyState.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * EmptyState — a centred, dashed-border panel for "nothing here yet".
+ *
+ * Wrapper over `.empty-state`. Pass a message via children and an optional
+ * call-to-action Button as `action`.
+ */
+function EmptyState({
+  className = '',
+  action,
+  children,
+  ...rest
+}) {
+  const cls = ['empty-state', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("div", _extends({
+    className: cls
+  }, rest), /*#__PURE__*/React.createElement("p", null, children), action);
+}
+Object.assign(__ds_scope, { EmptyState });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/feedback/EmptyState.jsx", error: String((e && e.message) || e) }); }
+
+// components/feedback/Toast.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Toast — a transient confirmation message.
+ *
+ * Wrapper over `.toast` (ink surface, cream text) with a coloured left
+ * border by tone. In the app these appear bottom-centre and auto-dismiss;
+ * this component renders a single toast for composition/preview.
+ */
+function Toast({
+  tone = 'success',
+  className = '',
+  children,
+  ...rest
+}) {
+  const toneClass = {
+    success: 'toast-success',
+    warn: 'toast-warn',
+    error: 'toast-error'
+  }[tone] || 'toast-success';
+  const cls = ['toast', toneClass, className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("div", _extends({
+    className: cls,
+    role: "status"
+  }, rest), children);
+}
+Object.assign(__ds_scope, { Toast });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/feedback/Toast.jsx", error: String((e && e.message) || e) }); }
+
+// components/forms/Checkbox.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Checkbox — a checkbox with an inline label (`.check-label`).
+ *
+ * The tick uses `accent-color: var(--primary)` (sage). Pass `size="sm"`
+ * for the compact variant used in the ingredient editor.
+ */
+function Checkbox({
+  label,
+  size,
+  className = '',
+  ...rest
+}) {
+  const cls = ['check-label', size === 'sm' ? 'sm' : '', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("label", {
+    className: cls
+  }, /*#__PURE__*/React.createElement("input", _extends({
+    type: "checkbox"
+  }, rest)), label);
+}
+Object.assign(__ds_scope, { Checkbox });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/forms/Checkbox.jsx", error: String((e && e.message) || e) }); }
+
+// components/forms/Field.jsx
+try { (() => {
+/**
+ * Field — a labelled form control wrapper.
+ *
+ * Mirrors the app's `<label>Text <input class="input"></label>` pattern:
+ * the label sits above and the control is passed as children. Optional
+ * `hint` renders dimmed helper text beneath.
+ */
+function Field({
+  label,
+  hint,
+  htmlFor,
+  className = '',
+  children
+}) {
+  const cls = ['field', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("label", {
+    className: cls,
+    htmlFor: htmlFor
+  }, label, children, hint ? /*#__PURE__*/React.createElement("small", {
+    className: "hint"
+  }, hint) : null);
+}
+Object.assign(__ds_scope, { Field });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/forms/Field.jsx", error: String((e && e.message) || e) }); }
+
+// components/forms/Input.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Input — a single-line text field.
+ *
+ * Wrapper over `.input` in components.css: cream-white surface, hairline
+ * border, sage focus ring. Pass `size="sm"` for the compact `.input-sm`.
+ */
+function Input({
+  size = 'md',
+  type = 'text',
+  className = '',
+  ...rest
+}) {
+  const cls = ['input', size === 'sm' ? 'input-sm' : '', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("input", _extends({
+    type: type,
+    className: cls
+  }, rest));
+}
+Object.assign(__ds_scope, { Input });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/forms/Input.jsx", error: String((e && e.message) || e) }); }
+
+// components/forms/Select.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Select — a native dropdown styled as `.input`.
+ *
+ * `options` may be strings or `{ value, label }` objects. Pass `children`
+ * instead to supply your own <option>/<optgroup> markup.
+ */
+function Select({
+  options,
+  value,
+  onChange,
+  className = '',
+  children,
+  ...rest
+}) {
+  const cls = ['input', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("select", _extends({
+    className: cls,
+    value: value,
+    onChange: onChange
+  }, rest), children, (options || []).map(o => {
+    const val = typeof o === 'object' ? o.value : o;
+    const label = typeof o === 'object' ? o.label : o;
+    return /*#__PURE__*/React.createElement("option", {
+      key: val,
+      value: val
+    }, label);
+  }));
+}
+Object.assign(__ds_scope, { Select });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/forms/Select.jsx", error: String((e && e.message) || e) }); }
+
+// components/forms/Textarea.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Textarea — a multi-line text field. Wrapper over `textarea.input`
+ * (resizes vertically only, 1.5 line-height).
+ */
+function Textarea({
+  rows = 3,
+  className = '',
+  ...rest
+}) {
+  const cls = ['input', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("textarea", _extends({
+    rows: rows,
+    className: cls
+  }, rest));
+}
+Object.assign(__ds_scope, { Textarea });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/forms/Textarea.jsx", error: String((e && e.message) || e) }); }
+
+// components/surfaces/Card.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Card — the neutral surface container used across the app.
+ *
+ * Cream-white surface, hairline border, soft card shadow, 12px radius.
+ * `accent` adds a coloured edge (the app uses these to flag today's meals,
+ * warnings, health panels and garden cards). `flush` removes padding for
+ * media/tables that should bleed to the edge.
+ */
+function Card({
+  accent,
+  flush = false,
+  title,
+  className = '',
+  children,
+  ...rest
+}) {
+  const accentClass = {
+    top: 'card-accent-top',
+    left: 'card-accent-left',
+    warn: 'card-accent-warn',
+    info: 'card-accent-info'
+  }[accent] || '';
+  const cls = ['card', accentClass, flush ? 'card-flush' : '', className].filter(Boolean).join(' ');
+  return /*#__PURE__*/React.createElement("section", _extends({
+    className: cls
+  }, rest), title ? /*#__PURE__*/React.createElement("h2", null, title) : null, children);
+}
+Object.assign(__ds_scope, { Card });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/surfaces/Card.jsx", error: String((e && e.message) || e) }); }
+
+// components/surfaces/Dialog.jsx
+try { (() => {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/**
+ * Dialog — the shared modal surface.
+ *
+ * Renders the `.app-dialog` panel (title, body, action row). By default it
+ * renders the panel inline for composition/preview; pass `open` to mount a
+ * real <dialog> with a backdrop. `wide` uses the 42rem width.
+ */
+function Dialog({
+  title,
+  actions,
+  open,
+  wide = false,
+  onClose,
+  className = '',
+  children,
+  ...rest
+}) {
+  const cls = ['app-dialog', wide ? 'dialog-wide' : '', className].filter(Boolean).join(' ');
+  const body = /*#__PURE__*/React.createElement("div", {
+    className: "dialog-body"
+  }, title ? /*#__PURE__*/React.createElement("h2", {
+    className: "dialog-title"
+  }, title) : null, /*#__PURE__*/React.createElement("div", {
+    className: "dialog-message"
+  }, children), actions ? /*#__PURE__*/React.createElement("div", {
+    className: "dialog-actions"
+  }, actions) : null);
+  if (open) {
+    return /*#__PURE__*/React.createElement("dialog", _extends({
+      className: cls,
+      open: true,
+      onClose: onClose
+    }, rest), body);
+  }
+  // Inline preview: render the panel as a positioned surface.
+  return /*#__PURE__*/React.createElement("div", _extends({
+    className: cls,
+    role: "dialog",
+    "aria-modal": "false",
+    style: {
+      position: 'static',
+      margin: 0
+    }
+  }, rest), body);
+}
+Object.assign(__ds_scope, { Dialog });
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/surfaces/Dialog.jsx", error: String((e && e.message) || e) }); }
+
+__ds_ns.Logo = __ds_scope.Logo;
+__ds_ns.RecipeCard = __ds_scope.RecipeCard;
+__ds_ns.Button = __ds_scope.Button;
+__ds_ns.IconButton = __ds_scope.IconButton;
+__ds_ns.SegmentedControl = __ds_scope.SegmentedControl;
+__ds_ns.AlertPill = __ds_scope.AlertPill;
+__ds_ns.Chip = __ds_scope.Chip;
+__ds_ns.EmptyState = __ds_scope.EmptyState;
+__ds_ns.Toast = __ds_scope.Toast;
+__ds_ns.Checkbox = __ds_scope.Checkbox;
+__ds_ns.Field = __ds_scope.Field;
+__ds_ns.Input = __ds_scope.Input;
+__ds_ns.Select = __ds_scope.Select;
+__ds_ns.Textarea = __ds_scope.Textarea;
+__ds_ns.Card = __ds_scope.Card;
+__ds_ns.Dialog = __ds_scope.Dialog;
+
+})();

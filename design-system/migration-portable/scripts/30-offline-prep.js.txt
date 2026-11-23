@@ -1,0 +1,22 @@
+// Phase 3.1–3.2 · offline targets + thumbnail injection → <OUT>/_work/offline.json
+const P=await loadP();const inv=await loadInv();
+const out=p=>[OUT+'/',KIT+'/','migration/','uploads/','assets/copy/'].some(x=>p.startsWith(x));
+const isT=r=>{const p=r.path;if(!/\.html?$/i.test(p)||out(p))return false;
+ return /^ui_kits\/[^/]+\/index\.html$/.test(p)||r.card!=null||/^templates\/[^/]+\/[^/]+\.dc\.html$/.test(p)||!p.includes('/')||(r.class==='deliverable'&&p.split('/').length<=2);};
+const targets=inv.filter(isT).map(r=>r.path).sort();
+const by=new Map(inv.map(r=>[r.path,r]));
+const ini=String(P.initials).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const TPL=`<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${P.accent}"/><text x="50" y="62" font-size="34" text-anchor="middle" fill="${P.accentInk}" font-family="serif">${ini}</text></svg></template>`;
+const R={targets,injected:[],had:[],bundled:[],manual:[],dc:[],nobody:[],tpl:TPL};
+for(const p of targets){const r=by.get(p);
+ if(r.bundled){R.bundled.push(p);continue;}
+ const t=await rd(p);if(t==null){R.manual.push(p);continue;}
+ if(t.includes('__bundler_thumbnail')){R.had.push(p);continue;}
+ if(p.endsWith('.dc.html')){R.dc.push(p);continue;}
+ const m=t.match(/<body\b[^>]*>/i);if(!m){R.nobody.push(p);continue;}
+ if(!SAFE.test(p)){R.manual.push(p);continue;}
+ const i=m.index+m[0].length;await saveFile(p,t.slice(0,i)+'\n'+TPL+t.slice(i));R.injected.push(p);}
+await saveFile(OUT+'/_work/offline.json',JSON.stringify(R));
+log(`targets ${targets.length} · injected ${R.injected.length} · had ${R.had.length} · already bundled (copy_files as-is) ${R.bundled.length} · manual ${R.manual.length} · dc ${R.dc.length} · no <body> ${R.nobody.length}`);
+if(R.manual.length||R.dc.length||R.nobody.length){log('Insert this exact line (after <body…>; for .dc.html after the @template comment; with no <body>, as the first line inside <html>):');log(TPL);}
+for(const k of ['manual','dc','nobody','bundled'])if(R[k].length)log(k+': '+JSON.stringify(R[k]));

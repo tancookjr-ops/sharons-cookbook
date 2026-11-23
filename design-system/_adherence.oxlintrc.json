@@ -1,0 +1,381 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/brand/**",
+              "components/content/**",
+              "components/controls/**",
+              "components/feedback/**",
+              "components/forms/**",
+              "components/surfaces/**",
+              "deploy/**",
+              "deploy/recipes/**",
+              "ui_kits/cookbook/**",
+              "ui_kits/cookbook/recipes/**",
+              "upload-v1.2.3/**",
+              "upload-v1.2.4/**",
+              "upload-v1.2.5/**",
+              "upload-v1.2.6/**",
+              "upload-v1.2.7/**",
+              "upload-v1.2.8/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Iowan Old Style|Gelasio))/i]",
+        "message": "Font not provided by the design system. Available: Iowan Old Style, Gelasio."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AlertPill'] > JSXAttribute > JSXIdentifier[name!=/^(?:tone|className|children|key|ref|className|style|children)$/]",
+        "message": "<AlertPill> doesn't accept that prop. Declared props: tone, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AlertPill'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:danger|warn|info)$/]",
+        "message": "<AlertPill> tone must be one of 'danger' | 'warn' | 'info'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute > JSXIdentifier[name!=/^(?:variant|size|href|icon|disabled|className|children|key|ref|className|style|children)$/]",
+        "message": "<Button> doesn't accept that prop. Declared props: variant, size, href, icon, disabled, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:primary|ghost|danger|danger-ghost)$/]",
+        "message": "<Button> variant must be one of 'primary' | 'ghost' | 'danger' | 'danger-ghost'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm|md|lg)$/]",
+        "message": "<Button> size must be one of 'sm' | 'md' | 'lg'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Card'] > JSXAttribute > JSXIdentifier[name!=/^(?:accent|flush|title|className|children|key|ref|className|style|children)$/]",
+        "message": "<Card> doesn't accept that prop. Declared props: accent, flush, title, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Card'] > JSXAttribute[name.name='accent'] > Literal[value!=/^(?:top|left|warn|info)$/]",
+        "message": "<Card> accent must be one of 'top' | 'left' | 'warn' | 'info'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Checkbox'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|size|className|key|ref|className|style|children)$/]",
+        "message": "<Checkbox> doesn't accept that prop. Declared props: label, size, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Checkbox'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm)$/]",
+        "message": "<Checkbox> size must be one of 'sm'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute > JSXIdentifier[name!=/^(?:variant|size|className|children|key|ref|className|style|children)$/]",
+        "message": "<Chip> doesn't accept that prop. Declared props: variant, size, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:default|tag|danger|warn|info)$/]",
+        "message": "<Chip> variant must be one of 'default' | 'tag' | 'danger' | 'warn' | 'info'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm)$/]",
+        "message": "<Chip> size must be one of 'sm'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Dialog'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|actions|open|wide|onClose|className|children|key|ref|className|style|children)$/]",
+        "message": "<Dialog> doesn't accept that prop. Declared props: title, actions, open, wide, onClose, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='EmptyState'] > JSXAttribute > JSXIdentifier[name!=/^(?:action|className|children|key|ref|className|style|children)$/]",
+        "message": "<EmptyState> doesn't accept that prop. Declared props: action, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Field'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|hint|htmlFor|className|children|key|ref|className|style|children)$/]",
+        "message": "<Field> doesn't accept that prop. Declared props: label, hint, htmlFor, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='IconButton'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|className|children|key|ref|className|style|children)$/]",
+        "message": "<IconButton> doesn't accept that prop. Declared props: label, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Input'] > JSXAttribute > JSXIdentifier[name!=/^(?:size|className|key|ref|className|style|children)$/]",
+        "message": "<Input> doesn't accept that prop. Declared props: size, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Input'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm|md)$/]",
+        "message": "<Input> size must be one of 'sm' | 'md'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute > JSXIdentifier[name!=/^(?:variant|size|className|key|ref|className|style|children)$/]",
+        "message": "<Logo> doesn't accept that prop. Declared props: variant, size, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:full|mark)$/]",
+        "message": "<Logo> variant must be one of 'full' | 'mark'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='RecipeCardData'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|subtitle|category|totalMinutes|difficulty|favourite|photo|key|ref|className|style|children)$/]",
+        "message": "<RecipeCardData> doesn't accept that prop. Declared props: title, subtitle, category, totalMinutes, difficulty, favourite, photo."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SegmentOption'] > JSXAttribute > JSXIdentifier[name!=/^(?:value|label|hint|key|ref|className|style|children)$/]",
+        "message": "<SegmentOption> doesn't accept that prop. Declared props: value, label, hint."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Select'] > JSXAttribute > JSXIdentifier[name!=/^(?:options|value|onChange|className|children|key|ref|className|style|children)$/]",
+        "message": "<Select> doesn't accept that prop. Declared props: options, value, onChange, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Textarea'] > JSXAttribute > JSXIdentifier[name!=/^(?:rows|className|key|ref|className|style|children)$/]",
+        "message": "<Textarea> doesn't accept that prop. Declared props: rows, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Toast'] > JSXAttribute > JSXIdentifier[name!=/^(?:tone|className|children|key|ref|className|style|children)$/]",
+        "message": "<Toast> doesn't accept that prop. Declared props: tone, className, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Toast'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:success|warn|error)$/]",
+        "message": "<Toast> tone must be one of 'success' | 'warn' | 'error'."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "AlertPill": {
+        "replaces": []
+      },
+      "Button": {
+        "replaces": []
+      },
+      "Card": {
+        "replaces": []
+      },
+      "Checkbox": {
+        "replaces": []
+      },
+      "Chip": {
+        "replaces": []
+      },
+      "Dialog": {
+        "replaces": []
+      },
+      "EmptyState": {
+        "replaces": []
+      },
+      "Field": {
+        "replaces": []
+      },
+      "IconButton": {
+        "replaces": []
+      },
+      "Input": {
+        "replaces": []
+      },
+      "Logo": {
+        "replaces": []
+      },
+      "RecipeCardData": {
+        "replaces": []
+      },
+      "SegmentOption": {
+        "replaces": []
+      },
+      "Select": {
+        "replaces": []
+      },
+      "Textarea": {
+        "replaces": []
+      },
+      "Toast": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--accent",
+      "--accent-soft",
+      "--bg",
+      "--border",
+      "--border-color",
+      "--border-width",
+      "--breakpoint-dock",
+      "--cream",
+      "--danger",
+      "--danger-soft",
+      "--driftwood",
+      "--dur-base",
+      "--dur-fast",
+      "--dur-slow",
+      "--ease",
+      "--font-body",
+      "--font-display",
+      "--font-mono",
+      "--font-scale",
+      "--ink",
+      "--ink-soft",
+      "--leading-body",
+      "--leading-tight",
+      "--main-max",
+      "--on-primary",
+      "--pad-btn",
+      "--pad-card",
+      "--pad-input",
+      "--paper",
+      "--primary",
+      "--primary-deep",
+      "--primary-soft",
+      "--radius",
+      "--radius-pill",
+      "--radius-sm",
+      "--ring",
+      "--sage",
+      "--sage-deep",
+      "--sage-soft",
+      "--sand",
+      "--seaglass",
+      "--seaglass-soft",
+      "--shadow-card",
+      "--shadow-pop",
+      "--sidebar-w",
+      "--space-2xl",
+      "--space-2xs",
+      "--space-3xl",
+      "--space-3xs",
+      "--space-lg",
+      "--space-md",
+      "--space-sm",
+      "--space-xl",
+      "--space-xs",
+      "--surface",
+      "--surface-2",
+      "--terracotta",
+      "--terracotta-soft",
+      "--text",
+      "--text-body",
+      "--text-h1",
+      "--text-h2",
+      "--text-h3",
+      "--text-sm",
+      "--text-soft",
+      "--text-xs",
+      "--topbar-h",
+      "--tracking-caps",
+      "--tracking-heading",
+      "--warn",
+      "--warn-soft",
+      "--weight-bold",
+      "--weight-medium",
+      "--weight-normal",
+      "--weight-semibold"
+    ],
+    "tokenKinds": {
+      "--cream": "color",
+      "--paper": "color",
+      "--sand": "color",
+      "--driftwood": "color",
+      "--sage": "color",
+      "--sage-deep": "color",
+      "--sage-soft": "color",
+      "--seaglass": "color",
+      "--seaglass-soft": "color",
+      "--terracotta": "color",
+      "--terracotta-soft": "color",
+      "--ink": "color",
+      "--ink-soft": "color",
+      "--bg": "color",
+      "--surface": "color",
+      "--surface-2": "color",
+      "--text": "font",
+      "--text-soft": "font",
+      "--border": "color",
+      "--primary": "color",
+      "--primary-deep": "color",
+      "--primary-soft": "color",
+      "--accent": "color",
+      "--accent-soft": "color",
+      "--danger": "color",
+      "--danger-soft": "color",
+      "--warn": "color",
+      "--warn-soft": "color",
+      "--on-primary": "color",
+      "--font-body": "font",
+      "--font-display": "font",
+      "--font-mono": "font",
+      "--font-scale": "font",
+      "--text-h1": "font",
+      "--text-h2": "font",
+      "--text-h3": "font",
+      "--text-body": "font",
+      "--text-sm": "font",
+      "--text-xs": "font",
+      "--weight-normal": "font",
+      "--weight-medium": "font",
+      "--weight-semibold": "font",
+      "--weight-bold": "font",
+      "--leading-tight": "font",
+      "--leading-body": "font",
+      "--tracking-heading": "font",
+      "--tracking-caps": "font",
+      "--space-3xs": "spacing",
+      "--space-2xs": "spacing",
+      "--space-xs": "spacing",
+      "--space-sm": "spacing",
+      "--space-md": "spacing",
+      "--space-lg": "spacing",
+      "--space-xl": "spacing",
+      "--space-2xl": "spacing",
+      "--space-3xl": "spacing",
+      "--pad-card": "spacing",
+      "--pad-btn": "spacing",
+      "--pad-input": "spacing",
+      "--main-max": "spacing",
+      "--sidebar-w": "spacing",
+      "--topbar-h": "spacing",
+      "--breakpoint-dock": "spacing",
+      "--radius": "radius",
+      "--radius-sm": "radius",
+      "--radius-pill": "radius",
+      "--border-width": "spacing",
+      "--border-color": "color",
+      "--shadow-card": "shadow",
+      "--shadow-pop": "shadow",
+      "--ring": "color",
+      "--ease": "other",
+      "--dur-fast": "other",
+      "--dur-base": "other",
+      "--dur-slow": "other"
+    },
+    "fontFamilies": [
+      "Gelasio",
+      "Iowan Old Style"
+    ]
+  }
+}

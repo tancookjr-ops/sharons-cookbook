@@ -1,0 +1,27 @@
+<!-- @dsCard group="Spacing" viewport="700x190" name="Corner radii" subtitle="12px cards · 8px inputs · 999px pills" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); padding: 22px 24px; color: var(--text); font-family: var(--font-body); }
+  .row { display: flex; gap: 26px; flex-wrap: wrap; }
+  .item { text-align: center; }
+  .demo { width: 120px; height: 74px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-card); }
+  .r-card { border-radius: 12px; }
+  .r-sm { border-radius: 8px; }
+  .r-pill { border-radius: 999px; }
+  .nm { font-weight: 700; font-size: .78rem; margin-top: 9px; }
+  .val { font-size: .72rem; color: var(--text-soft); }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#8FAE84"/><text x="50" y="62" font-size="34" text-anchor="middle" fill="#1A1A1A" font-family="serif">SC</text></svg></template>
+  <div class="row">
+    <div class="item"><div class="demo r-card"></div><div class="nm">--radius</div><div class="val">12px · cards, dialogs, panels</div></div>
+    <div class="item"><div class="demo r-sm"></div><div class="nm">--radius-sm</div><div class="val">8px · inputs, tiles</div></div>
+    <div class="item"><div class="demo r-pill"></div><div class="nm">--radius-pill</div><div class="val">999px · buttons, chips</div></div>
+  </div>
+</body>
+</html>

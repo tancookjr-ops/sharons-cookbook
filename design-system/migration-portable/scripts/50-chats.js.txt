@@ -1,0 +1,22 @@
+// Phase 0.3 · 6 · UNCLOSED-CHATS.md (from the Conversation Ledger) + COMMENTS.md
+// ARGS: {comments: <full get_comments text, all pages>}
+const P=await loadP();const L=[];
+if(P.has.ledger){const s=await rd('STATE.md');const i=s.search(/^##\s+Conversation Ledger/m);const sec=s.slice(i);const e=sec.slice(3).search(/\n##\s/);const body=e<0?sec:sec.slice(0,e+3);
+ for(const m of body.matchAll(/^\|([^|\n]+)\|([^|\n]+)\|([^|\n]*)\|/gm)){const t=m[1].trim(),st=m[2].trim(),d=m[3].trim();
+  if(/^:?-+:?$/.test(t)||/^chat$/i.test(t))continue;
+  L.push({t,st,closed:/closed/i.test(st)&&!/^reopened/i.test(st),seq:((t+' '+st+' '+d).match(/seq\s*(\d+)/i)||[])[1]||null,date:((st+' '+d).match(/\d{4}-\d{2}-\d{2}/)||[])[0]||null});}}
+const heads=[];for(const f of ['STATE.md','STATE-ARCHIVE.md']){const s=await rd(f);if(s)for(const m of s.matchAll(/^#{2,4}\s+[^\n]*(?:Archive Summary|Chat Summary)[^\n]*$/gim))heads.push(m[0].toLowerCase());}
+const nz=s=>s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+const NH=heads.map(nz);
+const found=c=>{if(c.seq&&heads.some(h=>new RegExp('seq\\s*'+c.seq+'\\b').test(h)))return true;const t=nz(c.t);if(NH.some(h=>h.includes(t)))return true;
+ const w=t.split(' ').filter(x=>x.length>3);if(w.length&&NH.some(h=>w.filter(x=>h.includes(x)).length/w.length>=0.6))return true;
+ return !!c.date&&heads.some((h,i)=>h.includes(c.date)&&w.some(x=>x.length>4&&NH[i].includes(x)));};
+const open=L.filter(c=>!c.closed),nosum=L.filter(c=>c.closed&&!found(c));
+let uc=`# UNCLOSED CHATS — ${P.short} · ${P.date}\n\n${DL(P.closes)}\n\nFor each chat below: open it and send \`${P.closePhrase}\` before the shutdown date. Pass: ${P.closePass}.\n\n`;
+if(P.has.ledger){uc+=`Derived from the Conversation Ledger in STATE.md: ${L.length} chats, ${open.length} not closed, ${nosum.length} closed with no archive summary found.\n\n| Chat | Reason |\n|---|---|\n| Migration sweep (this chat, ${P.date}) | open — the sweep runs in it |\n`;
+ for(const c of open)uc+=`| ${c.t} | status "${c.st}" — not marked closed |\n`;for(const c of nosum)uc+=`| ${c.t} | closed, no summary found |\n`;}
+else uc+=`This project has no Conversation Ledger, so open chats can't be derived. Open the project's chat list and treat EVERY chat as unclosed:\n\n| Chat | Reason |\n|---|---|\n| Migration sweep (this chat, ${P.date}) | open — the sweep runs in it |\n| Every other chat in this project's chat list | no ledger — check by hand |\n`;
+await saveFile(OUT+'/chats/UNCLOSED-CHATS.md',uc);
+const ct=String(ARGS.comments||'').trim();const none=!ct||/no unresolved comments/i.test(ct);
+await saveFile(OUT+'/chats/COMMENTS.md',`# COMMENTS — dump · ${P.short} · ${P.date}\n\n${DL(P.closes)}\n\n${none?'The comment reader returned **no unresolved comments** on this project.':'Full text as returned by the comment reader (all pages), unchanged:\n\n````\n'+ct+'\n````'}\n\nThe reader returns unresolved comments only; resolved comments can't be dumped from here. Nothing was resolved or changed.\n`);
+log(`UNCLOSED-CHATS: ${P.has.ledger?`ledger ${L.length} · open ${open.length} · no summary ${nosum.length}`:'no ledger — by-hand row written'} · COMMENTS: ${none?'none':ct.length+' chars'}`);

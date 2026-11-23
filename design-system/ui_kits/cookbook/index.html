@@ -1,0 +1,57 @@
+<!-- @dsCard group="Cookbook app" viewport="1280x860" name="Sharon's Cookbook — full app" subtitle="Interactive click-through: dashboard, recipes, planner, pantry, shopping, garden" -->
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>myCookbook</title>
+<meta name="theme-color" content="#faf6ef">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="myCookbook">
+<link rel="icon" type="image/png" href="../../assets/brand/app-icon-192.png">
+<link rel="apple-touch-icon" href="../../assets/brand/apple-touch-icon.png">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  /* Toast region positioning (matches the product); sits above the
+     mobile tab bar, drops to the viewport edge once the sidebar docks. */
+  .toast-region {
+    width: min(92vw, 26rem);
+    position: fixed; left: 50%; transform: translateX(-50%); z-index: 90;
+    bottom: calc(4.8rem + env(safe-area-inset-bottom));
+  }
+  @media (min-width: 900px) { .toast-region { bottom: 1rem; } }
+</style>
+<template id="__bundler_thumbnail" data-bg-color="#6e8b63">
+  <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 22 C42 38 36 56 40 74 C44 90 54 98 60 100 C66 98 76 90 80 74 C84 56 78 38 60 22 Z" fill="#faf6ef"></path>
+    <path d="M60 34 L60 94 M60 52 L48 62 M60 52 L72 62 M60 70 L50 79 M60 70 L70 79" stroke="#6e8b63" stroke-width="3.5" stroke-linecap="round" fill="none"></path>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+<!-- Recipe collection: builder + category chunks, merged by data.js -->
+<script src="recipes/build.js"></script>
+<script src="recipes/breakfast.js"></script>
+<script src="recipes/mains.js"></script>
+<script src="recipes/soups.js"></script>
+<script src="recipes/salads.js"></script>
+<script src="recipes/sides-breads.js"></script>
+<script src="recipes/sauces-preserves.js"></script>
+<script src="recipes/snacks-desserts.js"></script>
+<script src="recipes/drinks.js"></script>
+<script src="data.js"></script>
+<script src="units.js"></script>
+<script src="import-parse.js"></script>
+<script src="import-web.js"></script>
+<script src="auth.js"></script>
+<script type="text/babel" src="screens-main.jsx"></script>
+<script type="text/babel" src="screens-more.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

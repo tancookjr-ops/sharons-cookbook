@@ -1,0 +1,32 @@
+/* ==================================================================
+   fonts.css — webfont declarations.
+
+   Sharon's Cookbook is an offline-first PWA and deliberately ships NO
+   webfonts: body copy uses the platform UI sans (system-ui) and display
+   headings use the platform's warm old-style serif — "Iowan Old Style"
+   on Apple, "Palatino Linotype" on Windows, Georgia everywhere else.
+
+   For portability of THIS design system (so specimens, cards and mockups
+   render a consistent warm serif on Linux/Android where none of those are
+   installed), we load Gelasio — a metric-compatible stand-in for Georgia,
+   which is exactly the product's own final serif fallback. On Apple and
+   Windows the native faces still win. See readme.md → VISUAL FOUNDATIONS.
+   ================================================================== */
+
+/* Gelasio: Georgia-metric-compatible book serif (display fallback only). */
+@import url('https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
+
+/* "Iowan Old Style" is an Apple system serif with no distributable file, so it
+   is declared as a LOCAL-ONLY face (no url() to download). This is not a
+   substitution — it names the exact same family the product uses. Where the
+   font is installed (Apple), it renders; where it is not, this face resolves to
+   nothing and the --font-display stack falls through to Palatino → Gelasio →
+   Georgia exactly as before. To bake in a specific serif, upload its files and
+   add a url() src here. */
+@font-face {
+  font-family: "Iowan Old Style";
+  src: local("Iowan Old Style"), local("IowanOldStyle"), local("Iowan Old Style Roman");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}

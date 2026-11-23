@@ -1,0 +1,42 @@
+// Phase 3.3–3.5 · strip card/template markers from offline copies, write INDEX.html + FAILED.md, G2.
+// ARGS: {failed:[{path,error}]}
+const P=await loadP();const R=await rdJSON(OUT+'/_work/offline.json');if(!R)fail('run 30-offline-prep first');
+const inv=await loadInv();const by=new Map(inv.map(r=>[r.path,r]));
+const OFF=OUT+'/offline/';const have=new Set();
+for(const d of [...new Set(R.targets.map(dirOf))])for(const n of await lsn((OFF+d).replace(/\/$/,'')))have.add(d+n);
+const written=R.targets.filter(p=>have.has(p));
+const failed=new Map((ARGS.failed||[]).map(f=>[f.path,f.error||'(no error text)']));
+const lost=R.targets.filter(p=>!have.has(p)&&!failed.has(p));
+if(lost.length)fail(`G2 — ${lost.length} targets have neither an offline file nor a failure record: `+JSON.stringify(lost.slice(0,10)));
+const stripped=[],manual=[];
+for(const p of written){const r=by.get(p)||{};if(r.card==null&&!r.tpl&&!p.endsWith('.dc.html'))continue;
+ const f=OFF+p;const t=await rd(f);if(t==null)continue;
+ const t2=t.replace(/^\s*<!--\s*@(dsCard|template)\b[^>]*-->[ \t]*\r?\n?/,'');if(t2===t)continue;
+ if(!SAFE.test(f)){manual.push(f);continue;}await saveFile(f,t2);stripped.push(p);}
+const label=p=>{const c=(by.get(p)||{}).class;return p.startsWith('ui_kits/')?'UI kits':c==='card'||((by.get(p)||{}).card!=null&&!p.startsWith('ui_kits/'))?'Cards':p.startsWith('templates/')?'Templates':'Deliverables';};
+const groups={};for(const p of written)(groups[label(p)]=groups[label(p)]||[]).push(p);
+const href=p=>p.split('/').map(encodeURIComponent).join('/');
+const idx=`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${escH(P.short)} — offline copies</title>
+<style>body{font-family:Georgia,serif;background:#f6f4ef;color:#1d1a16;max-width:820px;margin:0 auto;padding:24px}a{color:${P.accent}}a:hover{text-decoration:none}li{margin:4px 0;overflow-wrap:anywhere}</style></head><body>
+<h1>${escH(P.short)} — offline copies</h1>
+<p>Generated ${P.date} from the files actually written: <b>${written.length}</b> of ${R.targets.length} targets. Each opens with no tool, no compiler and no internet (web fonts fall back offline).</p>
+<p>${DL(P.closes)}</p>
+${['UI kits','Cards','Templates','Deliverables'].filter(g=>groups[g]).map(g=>`<h2>${g} (${groups[g].length})</h2>\n<ul>\n${groups[g].map(p=>`<li><a href="${href(p)}">${escH(p)}</a></li>`).join('\n')}\n</ul>`).join('\n')}
+</body></html>`;
+await saveFile(OFF+'INDEX.html',idx);
+await saveFile(OFF+'FAILED.md',`# OFFLINE — FAILED · ${P.date}
+
+Targets ${R.targets.length} · written ${written.length} · failed ${failed.size}.
+
+${failed.size?[...failed].map(([p,e])=>`- \`${p}\` — ${e}`).join('\n'):'No failures.'}
+
+## Copied as-is (already self-contained)
+${R.bundled.length?R.bundled.map(p=>'- `'+p+'`').join('\n'):'None.'}
+
+## Bundler warnings that are not failures
+\`asset not found: %23…\` lines are in-page SVG references (\`url(#noise)\` etc.), not files. They still work.
+
+${DL(P.closes)}
+`);
+log(`G2 pass · written ${written.length}/${R.targets.length} · failed ${failed.size} · markers stripped ${stripped.length}`);
+if(manual.length)log('strip line 1 by hand (str_replace_edit) in: '+JSON.stringify(manual));

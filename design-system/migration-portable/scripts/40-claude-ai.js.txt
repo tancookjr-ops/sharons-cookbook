@@ -1,0 +1,122 @@
+// Phase 4.2–4.5 · tokens.inline.css · ds-components.js.txt (G3) · <slug>-starter.html · brand-reference.html
+const P=await loadP();const inv=await loadInv();const A=OUT+'/claude-ai/';const notes=[];
+const R18='<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>\n<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>';
+const noEnd=s=>s.replace(/<\/script/gi,'<\\/script');
+
+// 1 · tokens
+let css='';
+if(P.cssFiles.length){const ext=[],bodies=[],local=[];
+ for(const f of P.cssFiles){let t=(await rd(f))||'';
+  t=t.replace(/@import\s+(?:url\(\s*(?:"([^"]*)"|'([^']*)'|([^)\s]*))\s*\)|"([^"]*)"|'([^']*)')[^;\n]*;[ \t]*\r?\n?/g,(m,a,b,c,d,e)=>{const u=a??b??c??d??e??'';if(/^(https?:)?\/\//.test(u))ext.push(m.trim());return''});
+  for(const m of t.matchAll(/url\(\s*["']?(?!data:|https?:|#|%23|\/\/)([^"')]+)["']?\s*\)/g))local.push(f+': '+m[1]);
+  bodies.push(`/* ── ${f} ── */\n`+t.trim());}
+ for(const m of ext){const q1=(m.match(/'/g)||[]).length,q2=(m.match(/"/g)||[]).length,po=(m.match(/\(/g)||[]).length,pc=(m.match(/\)/g)||[]).length;if(q1%2||q2%2||po!==pc||!/;$/.test(m))fail('tokens: @import cut mid-statement (would swallow every rule after it): '+m.slice(0,120));}
+ if(/@import/.test(bodies.join('\n').replace(/\/\*[\s\S]*?\*\//g,'')))fail('tokens: an @import was left inside the inlined bodies');
+ css=[...new Set(ext)].join('\n')+`\n/* tokens.inline.css — derived ${P.date} from the ${P.cssEntry} @import closure (${P.cssFiles.length} files). Do not hand-edit. */\n`+bodies.join('\n\n')+'\n';
+ await saveFile(A+'tokens.inline.css',css);
+ if(local.length)notes.push(`${local.length} local url() refs won't load in an artifact: `+local.slice(0,6).join(', ')+(local.length>6?' …':''));
+}else notes.push('no global stylesheet → tokens.inline.css not applicable');
+
+// 2 · components (G3)
+let dsc='';
+if(P.isDS&&P.componentSources.length){const b=await rd('_ds_bundle.js');
+ const si=b.indexOf('const __ds_scope');if(si<0)fail('G3 bundle format not recognised (no __ds_scope)');
+ const li=b.indexOf('__ds_ns.__errors');const hEnd=b.indexOf('\n',li>=0?li:si)+1;const header=b.slice(0,hEnd);
+ const parts=b.slice(hEnd).split(/\n(?=\/\/ \S+\.(?:jsx|tsx|js|ts)[ \t]*\n)/);
+ const srcs=new Set(P.componentSources);
+ const keep=parts.filter(p=>{const m=p.match(/^\s*\/\/ (\S+)[ \t]*\n/);return m&&srcs.has(m[1])}).map(p=>p.replace(/\n__ds_ns\.[\s\S]*$/,'').trim());
+ const nsl=(b.match(/^__ds_ns\.\w+ = __ds_scope\.\w+;$/gm)||[]).filter(l=>P.components.includes(l.match(/__ds_ns\.(\w+)/)[1]));
+ dsc=header+'\n'+keep.join('\n\n')+'\n\n'+nsl.join('\n')+'\n\n})();\n';
+ const want=[...P.components].sort().join(','),got=nsl.map(l=>l.match(/__ds_ns\.(\w+)/)[1]).sort().join(',');
+ const def=new Set([...dsc.matchAll(/Object\.assign\(__ds_scope,\s*\{([^}]*)\}/g)].flatMap(m=>m[1].split(',').map(s=>s.trim().split(':')[0].trim()).filter(Boolean)));
+ if(keep.length!==srcs.size)fail(`G3 kept ${keep.length} bundle sections, expected ${srcs.size}`);
+ if(want!==got)fail(`G3 exports [${got}] ≠ header [${want}]`);
+ const undef=P.components.filter(n=>!def.has(n));if(undef.length)fail('G3 not defined in kept sections: '+undef.join(', '));
+ await saveFile(A+'ds-components.js.txt',dsc);
+}else notes.push('no component bundle → ds-components.js not applicable');
+
+// 3 · starter (demo renders only components whose Props have no required members)
+const needs=[],demo=[];
+const propsOf=async n=>{const src=P.componentMap[n];if(!src)return null;const t=await rd(src.replace(/\.(jsx|tsx|js|ts)$/,'.d.ts'));if(!t)return null;
+ const sig=t.match(new RegExp('(?:function\\s+'+n+'\\s*\\(\\s*\\w+\\??\\s*:\\s*|const\\s+'+n+'\\s*:\\s*React\\.\\w+<\\s*)([\\w.]+)'));
+ const tn=sig?sig[1]:n+'Props';if(/^React\./.test(tn))return {req:[],children:true};
+ const m=t.match(new RegExp('(?:interface\\s+'+escRe(tn)+'\\b[^{]*|type\\s+'+escRe(tn)+'\\s*=\\s*[^{]*)\\{([\\s\\S]*?)\\n\\}'));if(!m)return null;
+ const lines=m[1].split('\n').filter(l=>/^\s+(?:readonly\s+)?[A-Za-z_$][\w$]*\??\s*:/.test(l));if(!lines.length)return {req:[],children:false};
+ const ind=Math.min(...lines.map(l=>l.match(/^\s*/)[0].length));
+ const top=lines.filter(l=>l.match(/^\s*/)[0].length===ind).map(l=>l.trim().match(/^(?:readonly\s+)?([A-Za-z_$][\w$]*)(\??)\s*:/));
+ return {req:top.filter(x=>x&&!x[2]&&x[1]!=='children').map(x=>x[1]),children:top.some(x=>x&&x[1]==='children')};};
+if(dsc){for(const n of P.components){const pr=await propsOf(n);
+  if(pr&&!pr.req.length)demo.push(`  ['${n}', function(){ return h(DS.${n}, null, '${n}'); }]`);
+  else needs.push(n+(pr?` (required: ${pr.req.join(', ')})`:' (no Props type found)'));}
+ const starter=`<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light">
+<title>${escH(P.short)} — artifact starter</title>
+<style>
+${css}
+/* page rules */
+.demo-wrap{padding:32px;display:flex;flex-direction:column;gap:24px}
+.demo-item{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.demo-label{font:12px/1.3 ui-monospace,Menlo,monospace;opacity:.7}
+</style>
+${R18}
+<script>
+${noEnd(dsc)}
+</script>
+</head><body>
+<div id="app"></div>
+<script>
+(function(){
+var h=React.createElement, DS=window[${JSON.stringify(P.ns)}]||{};
+class Safe extends React.Component{constructor(p){super(p);this.state={err:null}}static getDerivedStateFromError(e){return{err:e}}render(){return this.state.err?h('div',{className:'demo-label'},'render failed: '+this.state.err.message):this.props.children}}
+// DEMO — one entry per component. Add the NEEDS-PROPS ones with real props from their .d.ts.
+// NEEDS-PROPS: ${needs.join('; ')||'none'}
+var DEMO=[
+${demo.join(',\n')}
+];
+function App(){return h('div',{className:'demo-wrap'},h('h1',null,${JSON.stringify(P.short)}),DEMO.map(function(d){return h('div',{key:d[0],className:'demo-item'},h('div',{className:'demo-label'},d[0]),h(Safe,null,h(d[1])));}));}
+ReactDOM.createRoot(document.getElementById('app')).render(h(App));
+})();
+</script>
+</body></html>
+`;
+ await saveFile(A+P.starter,starter);}
+
+// 4 · brand reference (every @dsCard file, grouped)
+const skipP=p=>[OUT+'/',KIT+'/','migration/','uploads/'].some(x=>p.startsWith(x));
+const cards=inv.filter(r=>r.card!=null&&!skipP(r.path)).map(r=>{const at=k=>(r.card.match(new RegExp(k+'="([^"]*)"'))||[])[1]||'';return {path:r.path,group:at('group')||'(none)',name:at('name')||r.path,sub:at('subtitle'),vp:at('viewport')}});
+cards.sort((a,b)=>a.group.localeCompare(b.group)||a.name.localeCompare(b.name));
+const rel=[];
+if(cards.length){let body='',g='';
+ for(const c of cards){let t=(await rd(c.path))||'';
+  if(P.cssEntry)t=t.replace(new RegExp('<link\\b[^>]*href="[^"]*'+escRe(P.cssEntry)+'"[^>]*>','gi'),css?'<style>'+css+'</style>':'');
+  const hasReact=/react(-dom)?(@|\/)[^"']*\.js/i.test(t);
+  t=t.replace(/<script\b[^>]*src="[^"]*_ds_bundle\.js"[^>]*>\s*<\/script>/gi,(hasReact?'':R18)+(dsc?'<script>'+noEnd(dsc)+'</script>':''));
+  const r2=[...t.matchAll(/\s(?:src|href)="(?!https?:|data:|#|mailto:|\/\/|javascript:)([^"]+)"/g)].map(x=>x[1]);if(r2.length)rel.push(c.path+': '+[...new Set(r2)].slice(0,4).join(', '));
+  if(c.group!==g){g=c.group;body+=`<h2>${escH(g)}</h2>\n`;}
+  const hgt=(c.vp.split('x')[1]||'400');
+  body+=`<section><h3>${escH(c.name)}</h3>${c.sub?`<p>${escH(c.sub)}</p>`:''}<p class="src">${escH(c.path)}</p><iframe title="${escH(c.name)}" style="height:${hgt}px" srcdoc="${escH(t)}"></iframe></section>\n`;}
+ const ref=`<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light">
+<title>${escH(P.short)} — brand reference</title>
+<style>
+${css}
+body{margin:0;padding:32px;background:#f6f4ef;color:#1d1a16}
+h1{margin:0 0 8px}h2{margin:40px 0 12px;border-bottom:1px solid #1d1a1633;padding-bottom:6px}h3{margin:16px 0 4px}p{margin:0 0 8px}
+.src{font-family:ui-monospace,Menlo,monospace;font-size:12px;opacity:.75}
+iframe{display:block;width:100%;border:1px solid #1d1a1633;border-radius:4px;background:#fff}
+</style></head><body>
+<h1>${escH(P.short)} — brand reference</h1>
+<p>Every Design System tab card, by group. Derived ${P.date}; ${cards.length} cards. Do not hand-edit.</p>
+${body}<script>
+document.querySelectorAll('iframe').forEach(function(f){f.addEventListener('load',function(){try{var d=f.contentDocument;var hh=Math.max(d.documentElement.scrollHeight,d.body?d.body.scrollHeight:0);if(hh>40)f.style.height=hh+'px';}catch(e){}});});
+</script>
+</body></html>
+`;
+ await saveFile(A+'brand-reference.html',ref);
+}else notes.push('no @dsCard files → brand-reference.html not applicable');
+
+log(`tokens ${css?'written':'n/a'} · ds-components ${dsc?`written, G3 pass (${P.components.length} exports)`:'n/a'} · starter ${dsc?P.starter+` (${demo.length} rendered)`:'n/a'} · brand-reference ${cards.length?cards.length+' cards':'n/a'}`);
+if(needs.length)log('NEEDS-PROPS (add to DEMO with real props from .d.ts): '+needs.join('; '));
+if(rel.length)log('cards with relative refs that will not resolve in brand-reference: '+rel.join(' | '));
+for(const n of notes)log('note: '+n);
+log(`Next: G4 — show_html ${A}${P.starter} and ${A}brand-reference.html, then get_webview_logs.`);

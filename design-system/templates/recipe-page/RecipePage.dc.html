@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Recipe page" description="A single-recipe one-pager — hero, ingredients with pantry checks, method, nutrition and health notes" -->
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#8FAE84"/><text x="50" y="62" font-size="34" text-anchor="middle" fill="#1A1A1A" font-family="serif">SC</text></svg></template>
+<helmet><script src="./ds-base.js"></script></helmet>
+<article style="max-width: 880px; margin: 0 auto; padding: 2rem 1.5rem 4rem;">
+  <nav class="crumbs"><a href="#">← Recipes</a></nav>
+
+  <header class="recipe-hero">
+    <div class="recipe-hero-text">
+      <h1>Roasted Squash &amp; Sage Soup</h1>
+      <p class="recipe-subtitle">Autumn in a bowl</p>
+      <p class="recipe-desc">Deeply roasted squash blended silky-smooth with fresh sage — a natural home for the garden harvest.</p>
+      <p class="recipe-meta-chips">
+        <span class="chip">Soups &amp; stews</span>
+        <span class="chip">Canadian</span>
+        <span class="chip">Lunch</span>
+        <span class="chip">Easy</span>
+        <span class="chip chip-tag">vegan</span>
+        <span class="chip chip-tag">eoe-friendly</span>
+        <span class="chip chip-tag">garden</span>
+      </p>
+      <dl class="recipe-times">
+        <div><dt>Prep</dt><dd>15 min</dd></div>
+        <div><dt>Cook</dt><dd>55 min</dd></div>
+        <div><dt>Total</dt><dd>70 min</dd></div>
+        <div><dt>Serves</dt><dd>6</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <div class="recipe-actions" role="toolbar" aria-label="Recipe actions">
+    <button class="btn btn-primary">★ Favourite</button>
+    <button class="btn btn-ghost">Edit</button>
+    <button class="btn btn-ghost">Add to plan</button>
+    <button class="btn btn-ghost">＋ Shopping list</button>
+    <button class="btn btn-ghost">Print / PDF</button>
+  </div>
+
+  <div class="recipe-columns">
+    <section class="recipe-ingredients">
+      <div class="section-head">
+        <h2>Ingredients</h2>
+        <div class="scale-control">
+          <button class="icon-btn" aria-label="Fewer servings">−</button>
+          <span>6 servings</span>
+          <button class="icon-btn" aria-label="More servings">＋</button>
+        </div>
+      </div>
+      <ul class="ing-list">
+        <li class="ing-row"><span class="ing-amount">1.2 kg</span><span class="ing-name">butternut squash<small class="ing-note">peeled and cubed</small></span><span class="ing-pantry in-pantry" title="In Pantry">✓</span></li>
+        <li class="ing-row"><span class="ing-amount">1</span><span class="ing-name">onion</span><span class="ing-pantry in-pantry" title="In Pantry">✓</span></li>
+        <li class="ing-row"><span class="ing-amount">45 ml</span><span class="ing-name">olive oil</span><span class="ing-pantry in-pantry" title="In Pantry">✓</span></li>
+        <li class="ing-row"><span class="ing-amount">8</span><span class="ing-name">fresh sage<small class="ing-note">leaves, from the garden</small></span><span class="ing-pantry in-pantry" title="In Garden harvest">✓</span></li>
+        <li class="ing-row"><span class="ing-amount">1 l</span><span class="ing-name">vegetable stock</span><span class="ing-pantry">·</span></li>
+        <li class="ing-row ing-optional"><span class="ing-amount">15 ml</span><span class="ing-name">maple syrup <em>(optional)</em><small class="ing-note">Nova Scotia's finest</small></span><span class="ing-pantry">·</span></li>
+      </ul>
+      <p class="pantry-legend"><span class="in-pantry">✓</span> = in your pantry</p>
+    </section>
+
+    <section class="recipe-instructions">
+      <h2>Instructions</h2>
+      <ol class="step-list">
+        <li class="step">
+          <h3 class="step-title">Roast</h3>
+          <p>Toss squash and onion with oil, spread on a tray and roast until caramelised at the edges.</p>
+          <p class="step-meta"><span class="chip">⏱ 40 min</span><span class="chip">🌡 200 °C</span><span class="chip">Sheet pan</span></p>
+        </li>
+        <li class="step">
+          <h3 class="step-title">Crisp the sage</h3>
+          <p>Fry sage leaves in a little oil for 30 seconds until crisp; set a few aside for garnish.</p>
+        </li>
+        <li class="step">
+          <h3 class="step-title">Blend</h3>
+          <p>Simmer the roasted vegetables in stock for 10 minutes, add most of the sage, then blend until completely smooth. Season, adding maple syrup if the squash needs help.</p>
+          <p class="step-meta"><span class="chip">⏱ 10 min</span><span class="chip">Blender</span></p>
+        </li>
+      </ol>
+    </section>
+  </div>
+
+  <section class="recipe-panel">
+    <h2>Nutrition <small>per serving</small></h2>
+    <table class="nutri-table"><tbody>
+      <tr><th scope="row">Calories</th><td>190 </td></tr>
+      <tr><th scope="row">Protein</th><td>3 g</td></tr>
+      <tr><th scope="row">Fat</th><td>9 g</td></tr>
+      <tr><th scope="row">Carbs</th><td>28 g</td></tr>
+      <tr><th scope="row">Fibre</th><td>5 g</td></tr>
+      <tr><th scope="row">Sugar</th><td>8 g</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="recipe-panel recipe-health">
+    <h2>Health notes</h2>
+    <h3>EoE notes</h3><p>Completely smooth once blended — a reliable EoE-friendly texture.</p>
+    <h3>Anti-inflammatory</h3><p>Squash and olive oil; skip the maple syrup to keep sugar minimal.</p>
+  </section>
+</article>
+</x-dc>
+</body>
+</html>
