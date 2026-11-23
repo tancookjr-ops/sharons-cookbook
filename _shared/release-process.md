@@ -13,7 +13,7 @@ Adapted from BorealCodex's deploy workflows for a static app (no server build).
 
 | Workflow | Runs | Does |
 |---|---|---|
-| Deploy to Staging (`deploy-staging.yml`) | every push to `Develop`, or by hand | recipe check (`scripts/check-recipes.mjs`), then FTP staging folder (if configured) + GitHub Pages `/staging/` |
+| Deploy to Staging (`deploy-staging.yml`) | every push to `Develop`, or by hand | recipe check (`scripts/check-recipes.mjs`) + mirror check (`scripts/sync-mirrors.sh --check`), then FTP staging folder (if configured) + GitHub Pages `/staging/` |
 | Promote staging → production (`promote.yml`) | by hand only — this is CHECK 3 | fast-forwards `Production` to `Develop`, then FTP production + Pages |
 | Deploy production (emergency) (`deploy.yml`) | by hand only | re-deploys current `Production` without promoting |
 | Publish to GitHub Pages (`pages.yml`) | called by the three above | builds one Pages site from both branches |

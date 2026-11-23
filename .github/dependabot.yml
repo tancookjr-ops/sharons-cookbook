@@ -1,0 +1,31 @@
+# Adapted from BorealCodex. Dependency updates arrive as grouped pull requests
+# into Develop, with a 7-day cooldown so a freshly published (possibly poisoned)
+# version is never adopted the day it appears. Nothing auto-merges.
+# Needs Dependabot turned on: Settings → Code security → Dependabot version updates.
+version: 2
+updates:
+  # The SHA-pinned GitHub Actions in .github/workflows/.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "Develop"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # The design-system tools (esbuild, playwright) — dev-only, never shipped.
+  - package-ecosystem: "npm"
+    directory: "/design-system/tools"
+    target-branch: "Develop"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      npm-dependencies:
+        patterns: ["*"]

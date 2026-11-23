@@ -13,6 +13,6 @@ and where the original can still be found.
 
 | Path | Why it stays |
 |---|---|
-| `design-system/deploy/` | the design tool's deploy package; it defines the shape `scripts/package-site.sh` builds (same file set) — compare the two to spot drift |
-| `design-system/ui_kits/cookbook/` | the offline standalone version of the app, published at `/design-system/ui_kits/cookbook/` |
+| `design-system/deploy/` | the design tool's deploy package; defines the shape `scripts/package-site.sh` builds; kept identical to the root by `scripts/sync-mirrors.sh` |
+| `design-system/ui_kits/cookbook/` | the offline standalone version of the app, published at `/design-system/ui_kits/cookbook/`; code + recipes kept identical by `scripts/sync-mirrors.sh` |
 | `design-system/MIGRATE/` | the backup's own migration record — its rule is "do not delete or rename" |

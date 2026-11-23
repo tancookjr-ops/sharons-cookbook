@@ -5,8 +5,8 @@ Three jobs, most frequent first. All of them end in the same release line.
 | Job | Stages | Ends in |
 |---|---|---|
 | Add a recipe | `work/recipes/01_draft` → `02_add` | release |
-| Update the app | edit root app files on `Develop` | release |
-| Change the design | `design-system/` (its own tools: check / build / preview) | release |
+| Update the app | edit root app files on a branch, `scripts/sync-mirrors.sh`, PR into `Develop` | release |
+| Change the design | edit root CSS/tokens, `scripts/sync-mirrors.sh`, check in `design-system/` | release |
 | Release | `work/release/01_staging` → `02_production` | live site |
 
 ## The three checkpoints (human gates)

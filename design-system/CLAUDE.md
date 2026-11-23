@@ -8,7 +8,8 @@ routing table, verbs and invariants still apply EXCEPT what this file translates
 1. Read `MIGRATE/START-HERE.md` §§ 0–4 once per session.
 2. the routing table in `CLAUDE.design-tool.md`, if present. Load ONLY the
    matching law files BEFORE acting.
-3. If `tools/node_modules/` is missing: `cd tools && npm ci && npx playwright install chromium`.
+3. If `tools/node_modules/` is missing: `cd tools && npm ci --ignore-scripts && npx playwright install chromium`
+   (`--ignore-scripts` is the repo's supply-chain rule; the lockfile is committed — see `../_shared/rules.md`).
 
 ## The compiler and preview you now own (`tools/`)
 | Command | Replaces | When |
@@ -22,6 +23,12 @@ routing table, verbs and invariants still apply EXCEPT what this file translates
 
 Run them from `tools/`; they treat the parent folder as the project root.
 `tools/ds.config.json` holds the namespace (`SharonSCookbookDesignSystem_c765c0`).
+
+## Where design changes are made
+The live app at the repo ROOT is the one source of truth. `styles.css`, `base.css`,
+`components.css`, `patterns.css` and `tokens/` here are **copies** of the root files.
+Edit the root file, run `../scripts/sync-mirrors.sh`, then check/preview here. The
+staging deploy fails if a copy has drifted. Never edit a mirrored file only here.
 
 ## Translations that matter
 - `_ds_bundle.js`, `_ds_manifest.json`, `_adherence.oxlintrc.json` were tool
@@ -39,3 +46,5 @@ looked at. Console errors 0. Report the commands and their output lines.
 
 ## Invariants
 None yet. The owner confirmed on 2026-11-23 that no brand rules exist. Follow the existing tokens and guidelines; propose any new rule to the owner before relying on it, and record it here once agreed.
+
+**Not a design-system task?** Return to the root `../CLAUDE.md`.
