@@ -4,11 +4,14 @@ import { join, relative, sep } from 'node:path';
 
 export const SKIP = new Set(['node_modules', '.git', 'tools', 'export', 'exports', 'github-staging', 'scraps', 'scratch', 'screenshots', 'uploads', 'locker', 'MIGRATE', 'migration', 'migration-portable']);
 
+// Version snapshots (upload-v1.2.3 …) are partial copies kept as history, not DS sources.
+export const SKIP_RE = /^upload-v\d/;
+
 export function walk(dir, root, out = []) {
   for (const n of readdirSync(dir)) {
     const p = join(dir, n);
     const s = statSync(p);
-    if (s.isDirectory()) { if (!SKIP.has(n)) walk(p, root, out); }
+    if (s.isDirectory()) { if (!SKIP.has(n) && !SKIP_RE.test(n)) walk(p, root, out); }
     else out.push(relative(root, p).split(sep).join('/'));
   }
   return out;

@@ -27,7 +27,9 @@ for (const f of files.filter(f => f.endsWith('.html') && !f.startsWith('template
   if (!card) { if (/@dsCard/.test(body.slice(0, 2000))) errors.push(`@dsCard not on line 1: ${f}`); continue; }
   for (const k of ['group', 'name']) if (!card[k]) errors.push(`@dsCard missing ${k}: ${f}`);
   if (!card.viewport) errors.push(`@dsCard viewport must be WxH: ${f}`);
-  if (/<script[^>]+src="[^"]+\.(jsx|tsx)"/.test(body)) errors.push(`card loads raw .jsx/.tsx (use _ds_bundle.js): ${f}`);
+  // ui_kits/ are full-app click-throughs that compile their own screens with in-browser Babel; the bundle rule is for component cards.
+  const appKit = f.startsWith('ui_kits/') && !/<script(?![^>]*type="text\/babel")[^>]+src="[^"]+\.(jsx|tsx)"/.test(body);
+  if (!appKit && /<script[^>]+src="[^"]+\.(jsx|tsx)"/.test(body)) errors.push(`card loads raw .jsx/.tsx (use _ds_bundle.js): ${f}`);
   cards.push({ path: f, ...card });
 }
 
