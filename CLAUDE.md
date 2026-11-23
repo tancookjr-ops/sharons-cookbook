@@ -33,7 +33,7 @@ If something needs explaining, it goes in that folder's `CONTEXT.md`.
 | deploys, CI, scripts 🔒 | `.github/CONTEXT.md` / `scripts/CONTEXT.md` | owner's yes to the impact summary |
 | secrets, FTP details | `_shared/secrets.md` | owner enters values in GitHub |
 | plan the v2 rewrite | `work/major-update/CONTEXT.md` | — |
-| set up another repo the same way | `.claude/skills/repo-onboard/SKILL.md` (the patch) | owner approves the proposal |
+| set up another repo the same way | https://github.com/tancookjr-ops/repo-onboard (the patch) | owner approves the proposal |
 | "pickup" / "handoff" | `_shared/working-practices.md` → Pickup / handoff | — |
 | asked for status | `CONTEXT.md` → "Status" | report what exists |
 

@@ -6,13 +6,17 @@ Status is never stored here — it is read from the files (`CONTEXT.md` → Stat
 ## 2026-11-23 — repo-onboard patch
 
 **Changed**
-- `.claude/skills/repo-onboard/`: a reusable patch that installs this whole setup on another
-  repo — intake rounds (AskUserQuestion), inventory, renderer, verify against real branches,
+- The repo-onboard patch, now at https://github.com/tancookjr-ops/repo-onboard: installs
+  this whole setup on another repo — intake rounds (AskUserQuestion), inventory, renderer, verify against real branches,
   design-backup import with the known fixes, one PR, auto-merge, deploy watch, fix loop.
 - Dry-run on a pristine copy of this repo: staging package byte-identical to the hand-built one.
 
+- Security alert checked: esbuild 0.24.2 in `design-system/tools` (GHSA-67mh-4wv8-2f99,
+  moderate; affects only esbuild's dev server, which the tools never start). Dependabot
+  PR #15 upgrades to 0.28.2 — tested: identical bundle, check 0 errors, audit clean.
+
 **Waiting on the owner**
-- Decide where the patch should live for other repos (its own repo is best).
+- Merge Dependabot PR #15 (esbuild). PR #14 (actions majors) — review before merging.
 
 ## 2026-11-23 — workspace, deploys, rules
 
