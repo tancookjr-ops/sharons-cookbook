@@ -1,0 +1,67 @@
+name: Promote staging → production
+
+# Adapted from BorealCodex's promote.yml. THE one-click release (CHECK 3 is you
+# pressing this button after the phone check on staging).
+# Fast-forwards `Production` to the tested `Develop` tip, then deploys production
+# in this same run (a push made with GITHUB_TOKEN does not trigger other workflows).
+#
+# Safety: promotes ONLY if Production is an ancestor of Develop (a clean
+# fast-forward). If a hotfix went straight to Production, this fails and tells you
+# to merge Production into Develop first — so production never silently loses a commit.
+on:
+  workflow_dispatch:
+
+# Shares the production lock so it never runs at the same time as deploy.yml.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # push the fast-forward to Production
+    outputs:
+      sha: ${{ steps.ff.outputs.sha }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: Develop
+          fetch-depth: 0
+
+      - name: Fast-forward Production → Develop
+        id: ff
+        run: |
+          git fetch origin Production Develop
+          if ! git merge-base --is-ancestor origin/Production origin/Develop; then
+            echo "✖ Production has commits that are not on Develop."
+            echo "  Merge Production into Develop first (so Develop is ahead), then re-run promote."
+            exit 1
+          fi
+          if [ "$(git rev-parse origin/Production)" = "$(git rev-parse origin/Develop)" ]; then
+            echo "▶ Production already equals Develop — re-deploying current Production."
+          else
+            echo "▶ Fast-forwarding Production → Develop tip…"
+            git push origin origin/Develop:refs/heads/Production
+          fi
+          echo "sha=$(git rev-parse origin/Develop)" >> "$GITHUB_OUTPUT"
+          echo "### Promoted \`$(git rev-parse --short origin/Develop)\` to Production" >> "$GITHUB_STEP_SUMMARY"
+
+  ftp:
+    needs: promote
+    uses: ./.github/workflows/ftp.yml
+    with:
+      target: production
+      ref: ${{ needs.promote.outputs.sha }}
+    secrets: inherit
+
+  pages:
+    needs: promote
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

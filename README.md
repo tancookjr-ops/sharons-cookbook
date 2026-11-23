@@ -1,47 +1,17 @@
-# Sharon's Cookbook — hosted app (GitHub Pages)
+# Sharon's Cookbook (myCookbook)
 
-Offline-first recipe book, meal planner, pantry and shopping lists.
-This folder is the complete, deploy-ready web app. Push it to GitHub,
-turn on Pages, install once on the phone — every future `git push`
-updates all installed copies automatically.
+Offline-first recipe book, meal planner, pantry, shopping lists and garden —
+an installable phone app (PWA). Live at
+`https://tancookjr-ops.github.io/sharons-cookbook/` (staging at `/staging/`).
 
----
-
-## 1 · One-time setup (you, ~10 minutes)
-
-### Create the repo
-1. Sign in at github.com → **New repository**.
-2. Name it (e.g. `sharons-cookbook`), set **Public**
-   (private works too but Pages on private repos needs a paid plan).
-3. Don't add any starter files. Create the repository.
-
-### Push this folder
-With git installed, from inside this `deploy/` folder:
-
-```bash
-git init
-git add .
-git commit -m "Sharon's Cookbook v1.0.0"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/sharons-cookbook.git
-git push -u origin main
-```
-
-(No git? On the repo page choose **uploading an existing file** and drag
-this folder's entire contents in, keeping the folder structure.)
-
-### Turn on GitHub Pages
-1. Repo → **Settings → Pages**.
-2. Under *Build and deployment*: Source = **Deploy from a branch**,
-   Branch = **main**, folder = **/ (root)** → Save.
-3. Wait ~1 minute. Your app is live at:
-   `https://tancookjr-ops.github.io/sharons-cookbook/`
-
-Open that URL in a browser and confirm it loads.
+- **Working in this repo (people and Claude):** start at `CLAUDE.md`.
+- **How releases work** (Develop → staging → phone check → Production, GitHub Pages / FTP):
+  `_shared/release-process.md`.
+- **Adding a recipe:** `work/recipes/01_draft/CONTEXT.md`.
 
 ---
 
-## 2 · Install on the phone (Sharon, ~1 minute)
+## Install on the phone (Sharon, ~1 minute)
 
 ### iPhone / iPad (Safari)
 1. Open the URL in **Safari**.
@@ -57,29 +27,20 @@ Install once. Never reinstall for updates.
 
 ---
 
-## 3 · Shipping an update (you, ~1 minute)
+## Shipping an update
 
-1. Edit the app files in this folder.
-2. **Bump the version** — open `sw.js` and change the first line:
-   `const VERSION = 'v1.0.0';` → `'v1.0.1'` (any new string works).
-   *No bump = phones keep the old cached version.*
-3. Commit and push:
-   ```bash
-   git add . && git commit -m "v1.0.1 — what changed" && git push
-   ```
-4. Next time the app is opened (online), it downloads the new version in
-   the background and shows **"Update ready — tap to reload"**. One tap
-   and she's current. Her recipes, pantry, plans and settings are
-   untouched — they live in the phone's local storage, not in the app.
+See `work/release/` — merge into `Develop`, check staging on the phone, then run
+**Promote staging → production** in GitHub Actions. Bump `VERSION` in `sw.js`
+so installed phones see "Update ready — tap to reload".
 
 ---
 
-## 4 · Data & troubleshooting
+## Data & troubleshooting
 
 - **Where's the data?** On the device (browser localStorage), saved
   automatically a moment after every change. Updates never touch it.
-- **Backup:** Settings → Backup (export/import flows are stubs for now —
-  a good next milestone).
+- **Backup:** Import → Backup saves the whole account as a JSON file and
+  restores it (a restore replaces all of that account's data).
 - **Factory reset:** Settings → Danger zone → *Erase all data* (asks to
   confirm, then reloads with the starter content).
 - **Update banner never appears:** confirm you bumped `VERSION` in
@@ -104,5 +65,5 @@ Install once. Never reinstall for updates.
 | `styles.css` + `tokens/`, `base/components/patterns.css` | design system |
 | `icons/` | home-screen icons |
 
-Dev track (other update strategies considered): see `DEV-TRACK.md` in the
+Dev track (other update strategies considered): see `design-system/ui_kits/cookbook/DEV-TRACK.md` in the
 design-system project.

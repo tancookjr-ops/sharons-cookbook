@@ -1,0 +1,69 @@
+name: Publish to GitHub Pages
+
+# The hosting FALLBACK (and the sandbox while no FTP server is set up).
+# Publishes ONE GitHub Pages site holding three things:
+#   /                          production  = the Production branch, unchanged
+#   /staging/                  staging     = the Develop branch, sandboxed
+#                                            (own storage keys, never touches real data)
+#   /design-system/ui_kits/cookbook/   the offline standalone UI kit (from Production)
+#
+# Called by deploy-staging.yml, promote.yml and deploy.yml; also runnable by hand.
+# Needs Settings → Pages → Source = "GitHub Actions" (one-time switch).
+on:
+  workflow_call:
+  workflow_dispatch:
+
+# One Pages publish at a time; never cancel one half-way.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Check out Production
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: Production
+          path: prod
+
+      - name: Check out Develop
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: Develop
+          path: dev
+
+      - name: Package the site
+        # Uses Develop's copy of the script (it is always the newest).
+        run: |
+          set -euo pipefail
+          bash dev/scripts/package-site.sh prod _site production
+          bash dev/scripts/package-site.sh dev _site/staging staging
+          if [ -d prod/design-system/ui_kits ]; then
+            mkdir -p _site/design-system
+            for p in styles.css base.css components.css patterns.css tokens assets ui_kits; do
+              [ -e "prod/design-system/$p" ] && cp -R "prod/design-system/$p" _site/design-system/
+            done
+          fi
+          touch _site/.nojekyll
+          {
+            echo "### Published to GitHub Pages"
+            echo "- Production: \`$(git -C prod rev-parse --short HEAD)\` (Production)"
+            echo "- Staging: \`$(git -C dev rev-parse --short HEAD)\` (Develop) at /staging/"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
